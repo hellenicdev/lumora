@@ -94,7 +94,7 @@
 
       if (!response.ok) {
         clearTokens();
-        window.location.href = '/login.html';
+        window.location.href = '/lumora/login.html';
         return false;
       }
 
@@ -103,7 +103,7 @@
       return true;
     } catch (e) {
       clearTokens();
-      window.location.href = '/login.html';
+      window.location.href = '/lumora/login.html';
       return false;
     }
   }

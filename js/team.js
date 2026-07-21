@@ -69,7 +69,7 @@
 
       el.innerHTML = orgs.map(function (org) {
         const memberCount = org.members ? org.members.length : 1;
-        return '<a href="/organization.html?id=' + org._id + '" class="org-card card" style="margin-bottom:12px;display:flex">' +
+        return '<a href="/lumora/organization.html?id=' + org._id + '" class="org-card card" style="margin-bottom:12px;display:flex">' +
           '<div class="org-icon">' + org.name.charAt(0).toUpperCase() + '</div>' +
           '<div><div style="font-size:16px;font-weight:600">' + org.name + '</div>' +
           '<div style="font-size:13px;color:var(--text-muted)">' + memberCount + ' member(s) · ' + (org.role || 'member') + '</div></div>' +

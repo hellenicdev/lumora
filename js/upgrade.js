@@ -40,7 +40,7 @@
         if (isCurrent) {
           html += '<button class="btn btn-secondary" disabled style="width:100%;opacity:0.6">Current plan</button>';
         } else if (plan.price === 0) {
-          html += '<a href="/dashboard.html" class="btn btn-secondary" style="width:100%;text-align:center;text-decoration:none">Get Started</a>';
+          html += '<a href="/lumora/dashboard.html" class="btn btn-secondary" style="width:100%;text-align:center;text-decoration:none">Get Started</a>';
         } else if (!hasKoFi) {
           html += '<button class="btn btn-primary" style="width:100%" disabled>Coming soon</button>';
         } else {

@@ -79,9 +79,9 @@
 
   function initNav() {
     var nav = document.querySelector('.sidebar-nav');
-    if (nav && !document.querySelector('.nav-item[href="/upgrade.html"]')) {
+    if (nav && !document.querySelector('.nav-item[href="/lumora/upgrade.html"]')) {
       var plansLink = document.createElement('a');
-      plansLink.href = '/upgrade.html';
+      plansLink.href = '/lumora/upgrade.html';
       plansLink.className = 'nav-item';
       plansLink.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12m11.32 11.32l2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12m11.32-11.32l2.12-2.12"/></svg>Plans';
       nav.appendChild(plansLink);
@@ -162,7 +162,7 @@
       '  <div class="card">',
       '    <h3 style="margin-bottom:16px">Plan & Billing</h3>',
       '    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">You\'re currently on the <strong>' + planLabel + '</strong> plan.</p>',
-      '    <a href="/upgrade.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex">' + (currentUser && (currentUser.role === 'pro' || currentUser.role === 'team_admin' || currentUser.role === 'system_admin') ? 'Manage Plan' : 'Upgrade Plan') + '</a>',
+      '    <a href="/lumora/upgrade.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex">' + (currentUser && (currentUser.role === 'pro' || currentUser.role === 'team_admin' || currentUser.role === 'system_admin') ? 'Manage Plan' : 'Upgrade Plan') + '</a>',
       '  </div>',
 
       '  <div class="card" id="activationCard" style="' + (currentUser && (currentUser.role === 'pro' || currentUser.role === 'team_admin') ? 'display:none' : '') + '">',
@@ -309,7 +309,7 @@
 
         setTimeout(function () {
           clearTokens();
-          window.location.href = '/login.html';
+          window.location.href = '/lumora/login.html';
         }, 2000);
       } catch (err) {
         msg.innerHTML = '<span style="color:var(--error)">' + (err.message || 'Failed to change password.') + '</span>';
@@ -362,7 +362,7 @@
     } catch (err) {
       var msg = err.message || '';
       if (msg.includes('token') || msg.includes('Authentication') || msg.includes('Unauthorized') || msg.includes('Not authenticated')) {
-        window.location.href = '/login.html';
+        window.location.href = '/lumora/login.html';
       }
     }
   }
@@ -411,6 +411,6 @@
     } catch {}
 
     clearTokens();
-    window.location.href = '/login.html';
+    window.location.href = '/lumora/login.html';
   }
 })();

@@ -74,7 +74,7 @@
       list.innerHTML = repos.map(function (repo) {
         var lang = repo.language || '?';
         return [
-          '<a href="/repository.html?id=' + repo._id + '" class="repo-card card">',
+          '<a href="/lumora/repository.html?id=' + repo._id + '" class="repo-card card">',
           '<div class="repo-icon">' + lang.charAt(0).toUpperCase() + '</div>',
           '<div class="repo-info">',
           '<div class="repo-name">' + (repo.fullName || repo.name) + '</div>',
