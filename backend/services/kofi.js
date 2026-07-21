@@ -16,10 +16,10 @@ export function getPlans() {
     {
       id: 'pro',
       name: 'Pro',
-      price: 4,
+      price: 2,
       currency: 'USD',
       interval: 'month',
-      kofiUrl: config.kofi.pageUrl,
+      kofiUrl: 'https://ko-fi.com/summary/5aedaf60-a4fe-4d85-acfa-e7f79768a5ab',
       features: [
         'Unlimited repositories',
         '10,000 AI questions/month',
@@ -32,10 +32,10 @@ export function getPlans() {
     {
       id: 'team',
       name: 'Team',
-      price: 9,
+      price: 5,
       currency: 'USD',
       interval: 'month',
-      kofiUrl: config.kofi.pageUrl,
+      kofiUrl: 'https://ko-fi.com/summary/08184d07-a235-497a-95b6-9c1d734f2a5f',
       features: [
         'Unlimited everything',
         'Up to 10 team members',
