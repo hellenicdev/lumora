@@ -19,7 +19,7 @@ export function getPlans() {
       price: 4,
       currency: 'USD',
       interval: 'month',
-      kofiUrl: `${config.kofi.pageUrl}/Pro`,
+      kofiUrl: config.kofi.pageUrl,
       features: [
         'Unlimited repositories',
         '10,000 AI questions/month',
@@ -35,7 +35,7 @@ export function getPlans() {
       price: 9,
       currency: 'USD',
       interval: 'month',
-      kofiUrl: `${config.kofi.pageUrl}/Team`,
+      kofiUrl: config.kofi.pageUrl,
       features: [
         'Unlimited everything',
         'Up to 10 team members',
