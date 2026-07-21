@@ -32,7 +32,7 @@ export function getPlans() {
     {
       id: 'team',
       name: 'Team',
-      price: 5,
+      price: 6,
       currency: 'USD',
       interval: 'month',
       kofiUrl: 'https://ko-fi.com/summary/08184d07-a235-497a-95b6-9c1d734f2a5f',
