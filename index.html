@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumora — AI Software Intelligence Platform</title>
+  <meta name="description" content="Lumora understands your codebase, generates documentation, answers engineering questions, and protects your software.">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/landing.css">
+<script src="/js/toast.js"></script>
+</head>
+<body>
+  <nav class="navbar glass">
+    <div class="container navbar-inner">
+      <a href="/" class="logo">Lumora</a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="nav-actions">
+        <button id="themeToggle" class="btn btn-ghost theme-btn" aria-label="Toggle theme">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path class="sun" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            <path class="moon" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+        <a href="/login.html" class="btn btn-ghost">Log in</a>
+        <a href="/register.html" class="btn btn-primary">Get started</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container hero-content">
+      <div class="hero-badge">
+        <span class="badge badge-primary">AI-Powered</span>
+      </div>
+      <h1 class="hero-title">Your codebase has<br>never been this <span class="gradient-text">understood</span></h1>
+      <p class="hero-subtitle">
+        Lumora automatically understands your GitHub repositories, generates living documentation,<br>
+        answers engineering questions, and protects your code — like an AI engineer who knows everything.
+      </p>
+      <div class="hero-actions">
+        <a href="/register.html" class="btn btn-primary btn-lg">Start free trial</a>
+        <a href="#features" class="btn btn-secondary btn-lg">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number">100k+</span>
+          <span class="stat-label">Repositories analyzed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">99.9%</span>
+          <span class="stat-label">Documentation accuracy</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">50k+</span>
+          <span class="stat-label">Active developers</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-glow"></div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge badge-primary">Features</span>
+        <h2>Everything your team needs</h2>
+        <p>Lumora turns your repository into a searchable, documented, intelligent knowledge base.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card glass">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h3>AI Documentation</h3>
+          <p>Generate complete README, wiki, and API documentation from your codebase automatically. Always up to date.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <h3>Codebase Chat</h3>
+          <p>Ask questions about your code in plain English. Lumora answers with source references and file locations.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>Architecture Maps</h3>
+          <p>Visualize your entire project structure, data flow, dependencies, and API routes in an interactive graph.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Security Intelligence</h3>
+          <p>Detect leaked secrets, vulnerable patterns, and security issues before they become incidents.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Drift Detection</h3>
+          <p>Know when your documentation is outdated. Lumora compares code changes and suggests updates automatically.</p>
+        </div>
+        <div class="feature-card glass">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <h3>Team Workspaces</h3>
+          <p>Collaborate with your team. Share repositories, documentation, and security insights in organizations.</p>
+        </div>
+        <div class="feature-card glass" style="position:relative">
+          <div style="position:absolute;top:12px;right:12px;font-size:11px;background:var(--primary);color:white;padding:2px 10px;border-radius:100px;font-weight:600">Coming Soon</div>
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3>CI/CD Integration</h3>
+          <p>Auto-trigger documentation generation and security scans on every push. Keep your docs in sync with your pipeline.</p>
+        </div>
+        <div class="feature-card glass" style="position:relative">
+          <div style="position:absolute;top:12px;right:12px;font-size:11px;background:var(--primary);color:white;padding:2px 10px;border-radius:100px;font-weight:600">Coming Soon</div>
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>VS Code Extension</h3>
+          <p>Access Lumora docs, chat, and security insights directly from your editor. Inline suggestions as you code.</p>
+        </div>
+        <div class="feature-card glass" style="position:relative">
+          <div style="position:absolute;top:12px;right:12px;font-size:11px;background:var(--primary);color:white;padding:2px 10px;border-radius:100px;font-weight:600">Coming Soon</div>
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <h3>Custom Integrations</h3>
+          <p>Connect Lumora to your Slack, Jira, or any API. Automate workflows and receive alerts where you work.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge badge-primary">Pricing</span>
+        <h2>Simple, transparent pricing</h2>
+        <p>Start free. Upgrade when you need more.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card glass">
+          <h3>Free</h3>
+          <div class="price">$0<span>/month</span></div>
+          <ul class="pricing-features">
+            <li>1 repository</li>
+            <li>100 AI questions / month</li>
+            <li>Basic documentation</li>
+            <li>Weekly security scans</li>
+          </ul>
+          <a href="/register.html" class="btn btn-secondary" style="width:100%;justify-content:center">Get started</a>
+        </div>
+        <div class="pricing-card glass featured">
+          <div class="popular-badge">🔥 Best value</div>
+          <h3>Pro</h3>
+          <div class="price"><span class="old-price">$19</span> $4<span>/month</span></div>
+          <ul class="pricing-features">
+            <li>Unlimited repositories</li>
+            <li>Unlimited AI questions</li>
+            <li>Advanced documentation</li>
+            <li>Daily security scans</li>
+            <li>Architecture maps</li>
+            <li>Priority email support <span class="badge badge-primary" style="font-size:10px">Soon</span></li>
+          </ul>
+          <a href="/register.html" class="btn btn-primary" style="width:100%;justify-content:center">Start free trial</a>
+        </div>
+        <div class="pricing-card glass">
+          <h3>Team</h3>
+          <div class="price"><span class="old-price">$49</span> $9<span>/month</span></div>
+          <ul class="pricing-features">
+            <li>Everything in Pro</li>
+            <li>Unlimited team members</li>
+            <li>Organization workspaces</li>
+            <li>Role-based permissions</li>
+            <li>Team analytics</li>
+            <li>Audit logs <span class="badge badge-primary" style="font-size:10px">Soon</span></li>
+          </ul>
+          <a href="/register.html" class="btn btn-secondary" style="width:100%;justify-content:center">Start free trial</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge badge-primary">FAQ</span>
+        <h2>Frequently asked questions</h2>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item glass">
+          <button class="faq-question">
+            <span>How does Lumora understand my codebase?</span>
+            <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Lumora clones your repository, performs static analysis to extract structure, dependencies, APIs, and data models, then builds a knowledge graph. This graph powers documentation generation and AI answers grounded in your actual code.</p>
+          </div>
+        </div>
+        <div class="faq-item glass">
+          <button class="faq-question">
+            <span>Is my code safe with Lumora?</span>
+            <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes. We never store your source code permanently — only analysis results. GitHub tokens are encrypted at rest. All communications use HTTPS. We never execute repository code or install dependencies.</p>
+          </div>
+        </div>
+        <div class="faq-item glass">
+          <button class="faq-question">
+            <span>What programming languages do you support?</span>
+            <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>JavaScript, TypeScript, Python, Java, Go, Rust, PHP, HTML, CSS, Markdown, YAML, Docker, Shell, and JSON. More languages are added regularly.</p>
+          </div>
+        </div>
+        <div class="faq-item glass">
+          <button class="faq-question">
+            <span>Can Lumora generate documentation for existing projects?</span>
+            <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Absolutely. Just import your repository and Lumora generates README, wiki, API docs, and architecture documentation automatically. You can customize and regenerate anytime.</p>
+          </div>
+        </div>
+        <div class="faq-item glass">
+          <button class="faq-question">
+            <span>Can I cancel my subscription anytime?</span>
+            <svg class="faq-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes. You can cancel anytime. Your data remains accessible until the end of your billing period.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="logo">Lumora</a>
+          <p>AI-powered software intelligence for modern engineering teams.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#">Documentation</a>
+          <a href="#">API</a>
+        </div>
+        <div class="footer-links">
+          <h4>Company</h4>
+          <a href="#">About</a>
+          <a href="#">Blog</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="footer-links">
+          <h4>Legal</h4>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Security</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Lumora. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/landing.js"></script>
+</body>
+</html>

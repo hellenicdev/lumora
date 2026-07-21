@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team — Lumora</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/team.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="/js/toast.js"></script>
+</head>
+<body class="dashboard">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="logo">Lumora</a>
+      <button class="sidebar-close" id="sidebarClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard.html" class="nav-item">Dashboard</a>
+      <a href="/repositories.html" class="nav-item">Repositories</a>
+      <a href="/documentation.html" class="nav-item">Documentation</a>
+      <a href="/chat.html" class="nav-item">AI Chat</a>
+      <a href="/health.html" class="nav-item">Health</a>
+      <a href="/team.html" class="nav-item active">Team</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="userMenuTrigger">
+        <div class="sidebar-user-avatar" id="userAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userName">User</div>
+          <div class="sidebar-user-email" id="userEmail">user@example.com</div>
+          <div id="planBadge"></div>
+        </div>
+      </div>
+      <a href="#" id="logoutBtn" class="nav-item" style="color:var(--danger);margin-top:8px">Logout</a>
+    </div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <h2 style="font-size:18px;font-weight:600">Team</h2>
+      </div>
+      <div class="topbar-right">
+        <button id="themeToggle" class="icon-btn theme-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="sun" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/><path class="moon" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+      </div>
+    </header>
+    <div class="page-content">
+      <div class="org-header">
+        <div>
+          <h1 style="font-size:28px;font-weight:700;margin-bottom:4px">Organizations</h1>
+          <p style="color:var(--text-secondary)">Manage your team and collaborate on repositories.</p>
+        </div>
+        <button class="btn btn-primary" id="createOrgBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create Organization
+        </button>
+      </div>
+
+      <div id="createOrgModal" class="import-modal-overlay">
+        <div class="import-modal glass">
+          <h2>Create Organization</h2>
+          <form id="createOrgForm" class="import-form">
+            <div class="form-group">
+              <label for="orgName">Organization name</label>
+              <input type="text" id="orgName" class="input" placeholder="My Team" required>
+            </div>
+            <button type="submit" class="btn btn-primary auth-submit">Create</button>
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('createOrgModal').classList.remove('open')">Cancel</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="orgList"></div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/team.js"></script>
+</body>
+</html>

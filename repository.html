@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repository — Lumora</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/repositories.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="/js/toast.js"></script>
+</head>
+<body class="dashboard">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="logo">Lumora</a>
+      <button class="sidebar-close" id="sidebarClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard.html" class="nav-item">Dashboard</a>
+      <a href="/repositories.html" class="nav-item active">Repositories</a>
+      <a href="/documentation.html" class="nav-item">Documentation</a>
+      <a href="/chat.html" class="nav-item">AI Chat</a>
+      <a href="/health.html" class="nav-item">Health</a>
+      <a href="/team.html" class="nav-item">Team</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="userMenuTrigger">
+        <div class="sidebar-user-avatar" id="userAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userName">User</div>
+          <div class="sidebar-user-email" id="userEmail">user@example.com</div>
+          <div id="planBadge"></div>
+        </div>
+      </div>
+      <a href="#" id="logoutBtn" class="nav-item" style="color:var(--danger);margin-top:8px">Logout</a>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open sidebar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <a href="/repositories.html" class="btn btn-ghost" style="padding:4px 8px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Back
+        </a>
+      </div>
+      <div class="topbar-right">
+        <button id="themeToggle" class="icon-btn theme-btn" aria-label="Toggle theme">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path class="sun" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            <path class="moon" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content" id="repoDetailPage">
+      <div id="repoLoading" class="card" style="padding:60px;text-align:center">
+        <div class="skeleton" style="width:200px;height:28px;margin:0 auto 12px"></div>
+        <div class="skeleton" style="width:300px;height:16px;margin:0 auto"></div>
+      </div>
+
+      <div id="repoContent" style="display:none">
+        <div class="repo-detail-header">
+          <div class="repo-detail-info">
+            <h1 id="repoName">—</h1>
+            <p id="repoDescription">—</p>
+            <div class="repo-detail-meta">
+              <span class="badge badge-primary" id="repoLang">—</span>
+              <span class="badge" id="repoStatus">—</span>
+              <span id="repoFiles" style="color:var(--text-muted);font-size:14px">— files</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" id="resyncBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Resync
+            </button>
+            <a href="#" class="btn btn-ghost" id="githubLink" target="_blank" rel="noopener">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              View on GitHub
+            </a>
+          </div>
+        </div>
+
+        <div class="tabs" id="repoTabs">
+          <button class="tab active" data-tab="overview">Overview</button>
+          <button class="tab" data-tab="files">File Explorer</button>
+          <button class="tab" data-tab="routes">Routes</button>
+          <button class="tab" data-tab="dependencies">Dependencies</button>
+          <button class="tab" data-tab="graph">Architecture</button>
+        </div>
+
+        <div id="tab-overview" class="tab-content"></div>
+        <div id="tab-files" class="tab-content" style="display:none">
+          <div class="file-explorer">
+            <div class="file-tree" id="fileTree"></div>
+            <div class="file-preview" id="filePreview">
+              <div class="file-preview-header">Select a file to preview</div>
+              <div class="file-preview-content" style="color:var(--text-muted);padding:32px;text-align:center">Click a file in the tree to view its contents.</div>
+            </div>
+          </div>
+        </div>
+        <div id="tab-routes" class="tab-content" style="display:none"></div>
+        <div id="tab-dependencies" class="tab-content" style="display:none"></div>
+        <div id="tab-graph" class="tab-content" style="display:none">
+          <div class="graph-controls">
+            <input type="text" class="input graph-search" id="graphSearch" placeholder="Search nodes..." style="padding:8px 12px;font-size:14px">
+            <div class="graph-legend">
+              <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#4f8cff"></span> File</span>
+              <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#22c55e"></span> Function</span>
+              <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#f59e0b"></span> Class</span>
+              <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#ef4444"></span> Route</span>
+              <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#a855f7"></span> Model</span>
+              <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#ec4899"></span> Service</span>
+            </div>
+          </div>
+          <div class="graph-container" id="graphContainer">
+            <p style="color:var(--text-muted)">Loading graph data...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/repository-detail.js"></script>
+</body>
+</html>

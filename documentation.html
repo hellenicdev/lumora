@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation — Lumora</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/documentation.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="/js/toast.js"></script>
+</head>
+<body class="dashboard">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="logo">Lumora</a>
+      <button class="sidebar-close" id="sidebarClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard.html" class="nav-item">Dashboard</a>
+      <a href="/repositories.html" class="nav-item">Repositories</a>
+      <a href="/documentation.html" class="nav-item active">Documentation</a>
+      <a href="/chat.html" class="nav-item">AI Chat</a>
+      <a href="/health.html" class="nav-item">Health</a>
+      <a href="/team.html" class="nav-item">Team</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="userMenuTrigger">
+        <div class="sidebar-user-avatar" id="userAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userName">User</div>
+          <div class="sidebar-user-email" id="userEmail">user@example.com</div>
+          <div id="planBadge"></div>
+        </div>
+      </div>
+      <a href="#" id="logoutBtn" class="nav-item" style="color:var(--danger);margin-top:8px">Logout</a>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open sidebar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <h2 style="font-size:18px;font-weight:600">Documentation</h2>
+      </div>
+      <div class="topbar-right">
+        <button id="themeToggle" class="icon-btn theme-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="sun" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/><path class="moon" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+        <button class="icon-btn" id="notifTrigger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="repo-header" style="margin-bottom:24px">
+        <div>
+          <h1 style="font-size:28px;font-weight:700;margin-bottom:4px">Documentation Workspace</h1>
+          <p style="color:var(--text-secondary);font-size:15px">Select a repository to view and manage its documentation.</p>
+        </div>
+      </div>
+
+      <div id="repoSelectSection" class="card" style="padding:24px;margin-bottom:32px">
+        <div class="form-group" style="max-width:400px">
+          <label for="docRepoSelect">Repository</label>
+          <select id="docRepoSelect" class="input">
+            <option value="">— Select a repository —</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="docDashboard" style="display:none">
+        <div class="doc-grid" id="docCards"></div>
+
+        <div class="card" style="padding:24px;margin-bottom:32px">
+          <div class="doc-quality-score">
+            <div class="score" id="qualityScore">—</div>
+            <div class="score-label">Documentation Quality Score</div>
+            <div class="doc-quality-details" id="qualityDetails"></div>
+          </div>
+        </div>
+
+        <div id="driftAlert" style="display:none; padding:16px; border-radius:var(--radius-md); margin-top:16px" class="card"></div>
+
+        <div id="docViewer" style="display:none">
+          <div class="doc-viewer-header">
+            <div>
+              <h2 id="docViewerTitle">—</h2>
+              <p id="docViewerMeta" style="color:var(--text-muted);font-size:13px"></p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" id="regenerateBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                Regenerate
+              </button>
+              <button class="btn btn-secondary" id="copyBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                Copy
+              </button>
+            </div>
+          </div>
+          <div class="doc-content card" id="docContent" style="padding:32px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/documentation.js"></script>
+</body>
+</html>

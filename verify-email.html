@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify email — Lumora</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/auth.css">
+<script src="/js/toast.js"></script>
+</head>
+<body class="auth-page">
+  <div class="auth-glow"></div>
+  <div class="auth-container" style="text-align:center">
+    <div class="auth-header">
+      <a href="/" class="logo">Lumora</a>
+      <h1>Verifying your email</h1>
+    </div>
+    <div class="auth-form glass" id="verifyStatus">
+      <p style="color:var(--text-secondary)">Please wait while we verify your email address...</p>
+    </div>
+    <div class="auth-footer" id="verifyFooter" style="display:none">
+      <a href="/login.html">Go to log in</a>
+    </div>
+  </div>
+  <script src="/js/config.js"></script>
+  <script src="/js/theme.js"></script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      const apiBase = (typeof LUMORA_CONFIG !== 'undefined') ? LUMORA_CONFIG.API_BASE : 'http://localhost:3070/api';
+
+      if (!token) {
+        document.getElementById('verifyStatus').innerHTML = '<p style="color:var(--error)">Invalid verification link.</p>';
+        document.getElementById('verifyFooter').style.display = 'block';
+        return;
+      }
+
+      fetch(apiBase + '/auth/verify-email/' + encodeURIComponent(token))
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          const el = document.getElementById('verifyStatus');
+          if (data.success) {
+            el.innerHTML = '<p style="color:var(--success);font-size:18px;font-weight:600">Email verified!</p><p style="color:var(--text-secondary);margin-top:8px">You can now log in to your account.</p>';
+          } else {
+            el.innerHTML = '<p style="color:var(--error)">' + (data.error || 'Verification failed') + '</p>';
+          }
+          document.getElementById('verifyFooter').style.display = 'block';
+        })
+        .catch(function () {
+          document.getElementById('verifyStatus').innerHTML = '<p style="color:var(--error)">Connection error. Please try again.</p>';
+          document.getElementById('verifyFooter').style.display = 'block';
+        });
+    })();
+  </script>
+</body>
+</html>

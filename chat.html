@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat — Lumora</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/chat.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="/js/toast.js"></script>
+</head>
+<body class="dashboard">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="logo">Lumora</a>
+      <button class="sidebar-close" id="sidebarClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard.html" class="nav-item">Dashboard</a>
+      <a href="/repositories.html" class="nav-item">Repositories</a>
+      <a href="/documentation.html" class="nav-item">Documentation</a>
+      <a href="/chat.html" class="nav-item active">AI Chat</a>
+      <a href="/health.html" class="nav-item">Health</a>
+      <a href="/team.html" class="nav-item">Team</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="userMenuTrigger">
+        <div class="sidebar-user-avatar" id="userAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userName">User</div>
+          <div class="sidebar-user-email" id="userEmail">user@example.com</div>
+          <div id="planBadge"></div>
+        </div>
+      </div>
+      <a href="#" id="logoutBtn" class="nav-item" style="color:var(--danger);margin-top:8px">Logout</a>
+    </div>
+  </aside>
+
+  <div class="main-content" style="overflow:hidden">
+    <header class="topbar" style="position:relative">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <div class="form-group" style="margin:0;min-width:200px">
+          <select id="chatRepoSelect" class="input" style="padding:8px 12px;font-size:14px">
+            <option value="">— Select repository —</option>
+          </select>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button id="themeToggle" class="icon-btn theme-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="sun" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/><path class="moon" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+      </div>
+    </header>
+
+    <div class="chat-layout">
+      <div class="chat-sidebar">
+        <div class="chat-sidebar-header">
+          <button class="btn btn-primary" id="newChatBtn" style="width:100%;justify-content:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Chat
+          </button>
+        </div>
+        <div class="chat-session-list" id="sessionList"></div>
+      </div>
+
+      <div class="chat-main">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-empty" id="chatEmpty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted);margin-bottom:16px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <h3>Ask about your codebase</h3>
+            <p style="color:var(--text-secondary);font-size:14px">Select a repository and start asking questions about your code.</p>
+          </div>
+        </div>
+
+        <div class="chat-suggestions" id="chatSuggestions" style="display:none">
+          <button class="chat-suggestion" data-q="How does authentication work?">How does authentication work?</button>
+          <button class="chat-suggestion" data-q="What are the main features?">What are the main features?</button>
+          <button class="chat-suggestion" data-q="Explain the architecture">Explain the architecture</button>
+          <button class="chat-suggestion" data-q="What API endpoints exist?">What API endpoints exist?</button>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="chat-input-wrapper">
+            <textarea class="input chat-input" id="chatInput" placeholder="Ask a question about your codebase..." rows="1" style="overflow:hidden"></textarea>
+            <button class="btn btn-primary" id="sendBtn" style="height:48px;width:48px;padding:0;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/chat.js"></script>
+</body>
+</html>
