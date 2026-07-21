@@ -108,31 +108,6 @@
   justify-content: center;
 }
 
-.hero-stats {
-  display: flex;
-  gap: 48px;
-  margin-top: 48px;
-  padding-top: 48px;
-  border-top: 1px solid var(--border);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
 .hero-glow {
   position: absolute;
   top: 50%;
@@ -452,10 +427,6 @@
   }
   .features-grid {
     grid-template-columns: 1fr;
-  }
-  .hero-stats {
-    flex-direction: column;
-    gap: 24px;
   }
   .footer-grid {
     grid-template-columns: 1fr;
