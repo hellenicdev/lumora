@@ -7,8 +7,8 @@
   var apiBase, wsUrl, turnstileKey;
 
   if (isProduction) {
-    apiBase = 'https://lumora-api.onrender.com/api';
-    wsUrl = 'wss://lumora-api.onrender.com';
+    apiBase = 'https://lumora-9sb3.onrender.com/api';
+    wsUrl = 'wss://lumora-9sb3.onrender.com';
     turnstileKey = '0x4AAAAAADx1vc3kAwIOgXhw';
   } else {
     apiBase = protocol + '//' + host + ':3070/api';
