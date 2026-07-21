@@ -8,7 +8,15 @@ let io = null;
 export function initializeSocket(httpServer) {
   io = new Server(httpServer, {
     cors: {
-      origin: config.frontendUrl,
+      origin: (origin, cb) => {
+        if (!origin) return cb(null, true);
+        try {
+          const allowed = new URL(config.frontendUrl).origin;
+          cb(null, origin === allowed);
+        } catch {
+          cb(null, false);
+        }
+      },
       methods: ['GET', 'POST'],
       credentials: true,
     },

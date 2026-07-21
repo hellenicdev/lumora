@@ -18,12 +18,19 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(helmet());
-app.use(cors({
-  origin: config.nodeEnv === 'development'
-    ? true
-    : config.frontendUrl,
-  credentials: true,
-}));
+const corsOrigin = config.nodeEnv === 'development'
+  ? true
+  : (origin, cb) => {
+      if (!origin) return cb(null, true);
+      try {
+        const allowed = new URL(config.frontendUrl).origin;
+        cb(null, origin === allowed);
+      } catch {
+        cb(null, false);
+      }
+    };
+
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
