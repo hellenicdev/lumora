@@ -72,6 +72,15 @@ export async function myInvitations(req, res) {
   }
 }
 
+export async function leave(req, res) {
+  try {
+    const org = await teamService.leaveOrganization(req.params.id, req.user._id);
+    return success(res, { organization: org }, 'You have left the organization');
+  } catch (err) {
+    return error(res, err.message, 400);
+  }
+}
+
 export async function removeMember(req, res) {
   try {
     const org = await teamService.removeMember(req.params.id, req.params.userId, req.user._id);

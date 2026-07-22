@@ -1,6 +1,15 @@
 (function () {
   let orgId = null;
 
+  function getUserIdFromToken() {
+    var token = getAccessToken();
+    if (!token) return null;
+    try {
+      var payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.userId || payload.sub || null;
+    } catch { return null; }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     orgId = params.get('id');
@@ -71,6 +80,26 @@
       orgContent.style.display = 'block';
 
       loadMembers(org.members || []);
+
+      const currentUserId = getUserIdFromToken();
+      const ownerId = org.ownerId ? (org.ownerId._id || org.ownerId).toString() : null;
+      const isOwner = currentUserId && ownerId === currentUserId;
+      const leaveBtn = document.getElementById('leaveOrgBtn');
+      if (leaveBtn) {
+        if (!isOwner) {
+          leaveBtn.style.display = 'inline-flex';
+          leaveBtn.onclick = async function () {
+            if (!confirm('Are you sure you want to leave this organization?')) return;
+            try {
+              await apiRequest('/organizations/' + orgId + '/leave', { method: 'POST' });
+              showToast('You have left the organization', 'success');
+              window.location.href = '/lumora/team.html';
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          };
+        }
+      }
     } catch (err) {
       orgLoading.innerHTML = '<p style="color:var(--error)">Failed to load organization: ' + err.message + '</p>';
     }

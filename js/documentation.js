@@ -202,7 +202,6 @@
     if (!btn) return;
     if (!currentRepoId) return;
 
-    var originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Generating...';
 
@@ -211,12 +210,10 @@
         method: 'POST',
         body: { type: type },
       });
-      loadDocDashboard(currentRepoId);
     } catch (err) {
-      showToast('Failed to generate: ' + err.message, 'error');
-      btn.disabled = false;
-      btn.textContent = originalText;
+      showToast('Generation may still be processing: ' + err.message, 'warning');
     }
+    loadDocDashboard(currentRepoId);
   }
 
   async function regenerateDoc() {

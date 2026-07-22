@@ -167,6 +167,26 @@ export async function getUserInvitations(userId) {
   });
 }
 
+export async function leaveOrganization(orgId, userId) {
+  const org = await Organization.findById(orgId);
+  if (!org) throw new Error('Organization not found');
+
+  if (org.ownerId.toString() === userId.toString()) {
+    throw new Error('Owner cannot leave. Transfer ownership or delete the organization instead.');
+  }
+
+  const memberIndex = org.members.findIndex(
+    (m) => m.userId.toString() === userId.toString(),
+  );
+  if (memberIndex === -1) throw new Error('You are not a member of this organization');
+
+  org.members.splice(memberIndex, 1);
+  await org.save();
+
+  logger.info('Member left organization', { organizationId: orgId, userId });
+  return org;
+}
+
 export async function removeMember(orgId, memberId, requesterId) {
   const org = await Organization.findOne({ _id: orgId, ownerId: requesterId });
   if (!org) throw new Error('Only the organization owner can remove members');
