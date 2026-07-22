@@ -4,6 +4,7 @@ import { authenticate } from '../middlewares/auth.js';
 
 const router = Router();
 
+router.get('/login', githubController.login);
 router.get('/connect', authenticate, githubController.connect);
 router.get('/callback', githubController.callback);
 router.get('/repositories', authenticate, githubController.getRepositories);
