@@ -92,8 +92,7 @@
             if (!confirm('Are you sure you want to leave this organization?')) return;
             try {
               await apiRequest('/organizations/' + orgId + '/leave', { method: 'POST' });
-              showToast('You have left the organization', 'success');
-              window.location.href = '/lumora/team.html';
+              window.location.replace('/lumora/team.html?t=' + Date.now());
             } catch (err) {
               showToast(err.message, 'error');
             }

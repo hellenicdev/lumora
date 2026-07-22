@@ -38,6 +38,7 @@
 
     var reqHeaders = {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
     };
     for (var key in headers) {
       if (headers.hasOwnProperty(key)) reqHeaders[key] = headers[key];
