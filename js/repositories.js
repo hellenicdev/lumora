@@ -142,7 +142,7 @@
       });
 
       closeImportModal();
-      loadRepositories();
+      setTimeout(loadRepositories, 500);
       showNotification('Import started', 'Repository import has been queued.');
     } catch (err) {
       showToast(err.message, 'error');

@@ -15,7 +15,7 @@ import { logger } from '../utils/logger.js';
 
 export async function ensureIndexes() {
   const models = [
-    { model: User, indexes: [{ email: 1 }, { 'refreshTokens.token': 1 }, { githubId: 1 }] },
+    { model: User, indexes: [{ 'refreshTokens.token': 1 }, { githubId: 1 }] },
     { model: Repository, indexes: [{ userId: 1, updatedAt: -1 }, { userId: 1, fullName: 1 }, { fullName: 1 }] },
     { model: RepositorySnapshot, indexes: [{ repositoryId: 1, createdAt: -1 }, { 'tree.path': 1 }] },
     { model: KnowledgeChunk, indexes: [{ repositoryId: 1 }, { repositoryId: 1, file: 1 }, { 'keywords': 'text' }] },

@@ -89,13 +89,17 @@ export async function processImport(job) {
 
     updateProgress(50);
 
+    const minimalTree = tree.tree.map(function (item) {
+      return { path: item.path, type: item.type, size: item.size || 0 };
+    });
+
     const snapshot = await RepositorySnapshot.create({
       repositoryId,
       commitHash: tree.sha,
       branch: defaultBranch,
       filesCount: fileCount,
       size: estimateSize(tree.tree),
-      tree: tree.tree,
+      tree: minimalTree,
     });
 
     updateProgress(70);
