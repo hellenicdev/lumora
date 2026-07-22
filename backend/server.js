@@ -15,6 +15,7 @@ import { processImport } from './services/importService.js';
 import routes from './routes/index.js';
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 app.use(helmet());
