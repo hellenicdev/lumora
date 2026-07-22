@@ -177,25 +177,64 @@ export async function getMyUsage(req, res) {
   }
 }
 
-export async function activatePro(req, res) {
+export async function getDashboardStats(req, res) {
+  try {
+    const Repository = (await import('../models/Repository.js')).default;
+    const DocumentationVersion = (await import('../models/DocumentationVersion.js')).default;
+
+    const repos = await Repository.find({ userId: req.user._id }).lean();
+    const repoCount = repos.length;
+    const analysisCount = repos.filter(r => r.analysisStatus === 'completed').length;
+
+    const repoIds = repos.map(r => r._id);
+    const docCount = repoIds.length > 0
+      ? await DocumentationVersion.countDocuments({ repositoryId: { $in: repoIds } })
+      : 0;
+
+    const completedRepos = repos.filter(r => r.analysisStatus === 'completed');
+    const healthScore = completedRepos.length > 0
+      ? Math.round(completedRepos.reduce((sum, r) => sum + (r.healthScore || 0), 0) / completedRepos.length)
+      : null;
+
+    return success(res, {
+      repositories: repoCount,
+      analyses: analysisCount,
+      documents: docCount,
+      healthScore,
+    });
+  } catch (err) {
+    logger.error('Failed to get dashboard stats', { error: err.message });
+    return error(res, 'Failed to get dashboard stats', 500);
+  }
+}
+
+export async function activatePlan(req, res) {
   try {
     const { code } = req.body;
-    if (!code || code !== 'TESTINGISFUN') {
+    if (!code) return error(res, 'Activation code required', 400);
+
+    const codes = {
+      'TESTINGISFUN': 'pro',
+      'TEAMWORKISFUN': 'team_admin',
+    };
+
+    const targetRole = codes[code];
+    if (!targetRole) {
       return error(res, 'Invalid activation code', 400);
     }
 
-    if (req.user.role === 'pro') {
-      return error(res, 'Pro is already activated on this account', 400);
+    if (req.user.role === targetRole) {
+      return error(res, `${code === 'TESTINGISFUN' ? 'Pro' : 'Team'} is already activated on this account`, 400);
     }
 
-    req.user.role = 'pro';
+    req.user.role = targetRole;
     await req.user.save();
 
-    logger.info('Pro activated', { userId: req.user._id, email: req.user.email });
+    logger.info('Plan activated', { userId: req.user._id, email: req.user.email, role: targetRole });
 
-    return success(res, { user: req.user.toSafeObject() }, 'Pro plan activated successfully');
+    return success(res, { user: req.user.toSafeObject() }, `${code === 'TESTINGISFUN' ? 'Pro' : 'Team'} plan activated successfully`);
   } catch (err) {
-    logger.error('Pro activation failed', { error: err.message });
+    logger.error('Plan activation failed', { error: err.message });
     return error(res, 'Activation failed', 500);
   }
 }

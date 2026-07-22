@@ -16,6 +16,16 @@ const organizationSchema = new mongoose.Schema({
     },
     joinedAt: { type: Date, default: Date.now },
   }],
+  pendingInvitations: [{
+    email: { type: String, required: true, lowercase: true, trim: true },
+    role: {
+      type: String,
+      enum: ['admin', 'developer', 'viewer'],
+      default: 'developer',
+    },
+    invitedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now },
+  }],
   plan: {
     type: String,
     enum: ['free', 'pro', 'team', 'enterprise'],

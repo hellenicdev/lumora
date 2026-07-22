@@ -30,6 +30,7 @@ router.get('/me', authenticate, authController.getMe);
 router.patch('/profile', authenticate, authController.updateProfile);
 router.post('/change-password', authenticate, validate({ currentPassword: [{ required: true }], newPassword: [{ required: true, minLength: 8 }] }), authController.changePassword);
 router.get('/usage', authenticate, authController.getMyUsage);
-router.post('/activate-pro', authenticate, authController.activatePro);
+router.get('/dashboard-stats', authenticate, authController.getDashboardStats);
+router.post('/activate-plan', authenticate, authController.activatePlan);
 
 export default router;

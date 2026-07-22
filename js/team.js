@@ -1,6 +1,7 @@
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
     loadOrganizations();
+    loadInvitations();
 
     const createOrgBtn = document.getElementById('createOrgBtn');
     const createOrgModal = document.getElementById('createOrgModal');
@@ -78,5 +79,68 @@
     } catch (err) {
       el.innerHTML = '<p style="color:var(--error)">Failed to load organizations.</p>';
     }
+  }
+
+  async function loadInvitations() {
+    const section = document.getElementById('invitationsSection');
+    const list = document.getElementById('invitationsList');
+    if (!section || !list) return;
+
+    try {
+      const data = await apiRequest('/organizations/invitations');
+      const invitations = data.data.invitations || [];
+
+      if (invitations.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      list.innerHTML = invitations.map(function (inv) {
+        return '<div class="card" style="padding:16px;display:flex;align-items:center;gap:16px;margin-bottom:8px">' +
+          '<div style="flex:1">' +
+          '<div style="font-size:15px;font-weight:600">' + escapeHtml(inv.organizationName) + '</div>' +
+          '<div style="font-size:13px;color:var(--text-muted)">Role: ' + inv.role + ' · Invited ' + new Date(inv.invitedAt).toLocaleDateString() + '</div>' +
+          '</div>' +
+          '<button class="btn btn-primary accept-invite" data-org-id="' + inv.organizationId + '" style="padding:8px 16px;font-size:13px">Accept</button>' +
+          '<button class="btn btn-ghost reject-invite" data-org-id="' + inv.organizationId + '" style="padding:8px 16px;font-size:13px;color:var(--error)">Decline</button>' +
+          '</div>';
+      }).join('');
+
+      list.querySelectorAll('.accept-invite').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          const orgId = this.dataset.orgId;
+          try {
+            await apiRequest('/organizations/' + orgId + '/accept', { method: 'POST' });
+            showToast('Invitation accepted!', 'success');
+            loadInvitations();
+            loadOrganizations();
+          } catch (err) {
+            showToast(err.message, 'error');
+          }
+        });
+      });
+
+      list.querySelectorAll('.reject-invite').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          const orgId = this.dataset.orgId;
+          try {
+            await apiRequest('/organizations/' + orgId + '/reject', { method: 'POST' });
+            showToast('Invitation declined', 'success');
+            loadInvitations();
+          } catch (err) {
+            showToast(err.message, 'error');
+          }
+        });
+      });
+    } catch (err) {
+      section.style.display = 'none';
+    }
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
   }
 })();

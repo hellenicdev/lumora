@@ -45,6 +45,7 @@
   }
 
   async function loadDocDashboard(repoId) {
+    window.loadDocDashboard = loadDocDashboard;
     var dashboard = document.getElementById('docDashboard');
     var viewer = document.getElementById('docViewer');
     if (dashboard) dashboard.style.display = 'block';

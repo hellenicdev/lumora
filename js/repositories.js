@@ -54,6 +54,7 @@
   }
 
   async function loadRepositories() {
+    window.loadRepositories = loadRepositories;
     var list = document.getElementById('repoList');
     var empty = document.getElementById('repoEmpty');
     if (!list) return;
@@ -90,6 +91,11 @@
           '</a>'
         ].join('');
       }).join('');
+
+      var hasPending = repos.some(function (r) { return r.analysisStatus === 'pending' || r.analysisStatus === 'analyzing'; });
+      if (hasPending) {
+        setTimeout(loadRepositories, 5000);
+      }
     } catch (err) {
       if (list) list.innerHTML = '<p style="color:var(--error)">Failed to load repositories.</p>';
     }

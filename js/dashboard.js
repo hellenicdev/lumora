@@ -8,6 +8,7 @@
     initNav();
     initLogoutBtn();
     loadUser();
+    loadDashboardStats();
     connectSocket();
   });
 
@@ -48,14 +49,18 @@
 
   function initUserMenu() {
     var trigger = document.getElementById('userMenuTrigger');
+    var trigger2 = document.getElementById('userMenuTrigger2');
     var dropdown = document.getElementById('userMenuDropdown');
 
-    if (!trigger || !dropdown) return;
+    if (!dropdown) return;
 
-    trigger.addEventListener('click', function (e) {
+    function toggleMenu(e) {
       e.stopPropagation();
       dropdown.classList.toggle('open');
-    });
+    }
+
+    if (trigger) trigger.addEventListener('click', toggleMenu);
+    if (trigger2) trigger2.addEventListener('click', toggleMenu);
 
     document.addEventListener('click', function () {
       dropdown.classList.remove('open');
@@ -167,7 +172,7 @@
 
       '  <div class="card" id="activationCard" style="' + (currentUser && (currentUser.role === 'pro' || currentUser.role === 'team_admin') ? 'display:none' : '') + '">',
       '    <h3 style="margin-bottom:16px">Activation Code</h3>',
-      '    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">Have an activation code? Enter it here to unlock Pro.</p>',
+      '    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">Have an activation code? Enter it here to unlock a plan.</p>',
       '    <div style="display:flex;gap:12px">',
       '      <input type="text" class="input" id="activationCode" placeholder="Enter code" style="flex:1">',
       '      <button class="btn btn-primary" id="activateBtn">Activate</button>',
@@ -253,17 +258,18 @@
       msg.innerHTML = '';
 
       try {
-        var data = await apiRequest('/auth/activate-pro', {
+        var data = await apiRequest('/auth/activate-plan', {
           method: 'POST',
           body: { code: code },
         });
 
         currentUser = data.data.user;
-        msg.innerHTML = '<span style="color:var(--success)">' + (data.message || 'Pro plan activated successfully!') + '</span>';
+        var planName = code === 'TEAMWORKISFUN' ? 'Team' : 'Pro';
+        msg.innerHTML = '<span style="color:var(--success)">' + (data.message || planName + ' plan activated successfully!') + '</span>';
 
         var planEl = document.getElementById('settingsPlan');
         if (planEl) {
-          planEl.textContent = 'Pro';
+          planEl.textContent = planName;
           planEl.className = 'badge badge-primary';
         }
 
@@ -367,6 +373,28 @@
     }
   }
 
+  async function loadDashboardStats() {
+    try {
+      var data = await apiRequest('/auth/dashboard-stats');
+      var stats = data.data;
+
+      var statCards = document.querySelectorAll('.stat-card');
+      if (statCards.length >= 4) {
+        var valueEls = statCards[0].querySelector('.stat-card-value');
+        if (valueEls) valueEls.textContent = stats.repositories || 0;
+
+        var analysisEl = statCards[1].querySelector('.stat-card-value');
+        if (analysisEl) analysisEl.textContent = stats.analyses || 0;
+
+        var docEl = statCards[2].querySelector('.stat-card-value');
+        if (docEl) docEl.textContent = stats.documents || 0;
+
+        var healthEl = statCards[3].querySelector('.stat-card-value');
+        if (healthEl) healthEl.textContent = stats.healthScore !== null && stats.healthScore !== undefined ? stats.healthScore + '%' : '—';
+      }
+    } catch {}
+  }
+
   function connectSocket() {
     var token = getAccessToken();
     if (!token) return;
@@ -378,8 +406,18 @@
           auth: { token: token },
           transports: ['websocket', 'polling'],
         });
-        socket.on('notification', function (data) {
+        socket.on('notification.new', function (data) {
           addNotification(data);
+          if (data.title && data.title.toLowerCase().includes('repository')) {
+            if (window.location.pathname.includes('repositories')) {
+              window.loadRepositories && window.loadRepositories();
+            }
+          }
+          if (data.title && data.title.toLowerCase().includes('documentation')) {
+            if (window.location.pathname.includes('documentation')) {
+              window.loadDocumentation && window.loadDocumentation();
+            }
+          }
         });
       }
     } catch {}

@@ -39,9 +39,36 @@ export async function invite(req, res) {
     if (!email) return error(res, 'Email required', 400);
 
     const org = await teamService.inviteMember(req.params.id, email, role || 'developer', req.user._id);
-    return success(res, { organization: org }, 'Member invited');
+    return success(res, { organization: org }, 'Invitation sent');
   } catch (err) {
     return error(res, err.message, 400);
+  }
+}
+
+export async function acceptInvite(req, res) {
+  try {
+    const org = await teamService.acceptInvitation(req.params.id, req.user._id);
+    return success(res, { organization: org }, 'Invitation accepted');
+  } catch (err) {
+    return error(res, err.message, 400);
+  }
+}
+
+export async function rejectInvite(req, res) {
+  try {
+    const org = await teamService.rejectInvitation(req.params.id, req.user.email);
+    return success(res, { organization: org }, 'Invitation declined');
+  } catch (err) {
+    return error(res, err.message, 400);
+  }
+}
+
+export async function myInvitations(req, res) {
+  try {
+    const invitations = await teamService.getUserInvitations(req.user._id);
+    return success(res, { invitations });
+  } catch (err) {
+    return error(res, 'Failed to load invitations', 500);
   }
 }
 
