@@ -70,11 +70,11 @@
 
       el.innerHTML = orgs.map(function (org) {
         const memberCount = org.members ? org.members.length : 1;
-        return '<a href="/lumora/organization.html?id=' + org._id + '" class="org-card card" style="margin-bottom:12px;display:flex">' +
+        return '<a href="/lumora/organization.html?id=' + org._id + '" class="org-card card">' +
           '<div class="org-icon">' + org.name.charAt(0).toUpperCase() + '</div>' +
-          '<div><div style="font-size:16px;font-weight:600">' + org.name + '</div>' +
+          '<div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:600">' + org.name + '</div>' +
           '<div style="font-size:13px;color:var(--text-muted)">' + memberCount + ' member(s) · ' + (org.role || 'member') + '</div></div>' +
-          '<span class="badge badge-primary" style="margin-left:auto">' + (org.plan || 'free') + '</span></a>';
+          '<span class="badge badge-primary" style="margin-left:auto;align-self:center">' + (org.plan || 'free') + '</span></a>';
       }).join('');
     } catch (err) {
       el.innerHTML = '<p style="color:var(--error)">Failed to load organizations.</p>';
@@ -97,13 +97,15 @@
 
       section.style.display = 'block';
       list.innerHTML = invitations.map(function (inv) {
-        return '<div class="card" style="padding:16px;display:flex;align-items:center;gap:16px;margin-bottom:8px">' +
-          '<div style="flex:1">' +
+        return '<div class="card invitation-card">' +
+          '<div class="invitation-info">' +
           '<div style="font-size:15px;font-weight:600">' + escapeHtml(inv.organizationName) + '</div>' +
           '<div style="font-size:13px;color:var(--text-muted)">Role: ' + inv.role + ' · Invited ' + new Date(inv.invitedAt).toLocaleDateString() + '</div>' +
           '</div>' +
+          '<div class="invitation-actions">' +
           '<button class="btn btn-primary accept-invite" data-org-id="' + inv.organizationId + '" style="padding:8px 16px;font-size:13px">Accept</button>' +
           '<button class="btn btn-ghost reject-invite" data-org-id="' + inv.organizationId + '" style="padding:8px 16px;font-size:13px;color:var(--error)">Decline</button>' +
+          '</div>' +
           '</div>';
       }).join('');
 

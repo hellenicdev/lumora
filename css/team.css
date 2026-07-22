@@ -177,7 +177,31 @@
   animation: pulse 2s infinite;
 }
 
+.tab-content {
+  padding: 8px 0;
+}
+
+.invitation-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.invitation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.invitation-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .health-grid { grid-template-columns: 1fr; }
   .security-report-header { flex-direction: column; }
+  .invitation-card { flex-direction: column; align-items: stretch; text-align: center; }
+  .invitation-actions { justify-content: center; }
 }
