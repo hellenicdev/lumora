@@ -10,10 +10,7 @@ import { logger } from '../utils/logger.js';
 const pendingStates = new Map();
 
 export function login(req, res) {
-  const state = crypto.randomBytes(16).toString('hex');
-  pendingStates.set(state, { type: 'login' });
-  setTimeout(function () { pendingStates.delete(state); }, 600000);
-  const url = githubOAuth.getAuthorizationUrl(state);
+  const url = githubOAuth.getLoginAuthorizationUrl();
   return res.redirect(url);
 }
 
@@ -33,22 +30,41 @@ export async function callback(req, res) {
       return res.redirect(`${config.frontendUrl}/login.html?github=error&msg=no_code`);
     }
 
-    const stateData = pendingStates.get(state);
-    if (!stateData) {
-      return res.redirect(`${config.frontendUrl}/login.html?github=error&msg=expired`);
-    }
-
-    pendingStates.delete(state);
-
     const accessToken = await githubOAuth.exchangeCodeForToken(code);
     const githubUser = await githubOAuth.fetchGitHubUser(accessToken);
 
-    if (stateData.type === 'login') {
-      let user = await User.findOne({ githubId: String(githubUser.id) });
+    const stateData = state ? pendingStates.get(state) : null;
+    if (state && stateData) pendingStates.delete(state);
 
+    if (stateData && stateData.type === 'connect') {
+      const user = await User.findById(stateData.userId);
       if (!user) {
-        const email = githubUser.email || `${githubUser.login}@github.local`;
-        user = await User.create({
+        return res.redirect(`${config.frontendUrl}/dashboard.html?github=error&msg=user_not_found`);
+      }
+
+      user.githubId = String(githubUser.id);
+      user.githubUsername = githubUser.login;
+      user.avatar = githubUser.avatar_url || user.avatar;
+      await storeGitHubToken(user._id, accessToken);
+      await user.save();
+
+      logger.info('GitHub connected', { userId: user._id, username: githubUser.login });
+      return res.redirect(`${config.frontendUrl}/dashboard.html?github=connected`);
+    }
+
+    let user = await User.findOne({ githubId: String(githubUser.id) });
+
+    if (!user) {
+      const email = githubUser.email || (await githubOAuth.fetchGitHubEmail(accessToken)) || `${githubUser.login}@github.local`;
+
+      user = await User.findOne({ email });
+      if (user) {
+        user.githubId = String(githubUser.id);
+        user.githubUsername = githubUser.login;
+        user.avatar = githubUser.avatar_url || user.avatar;
+        user.githubConnected = true;
+      } else {
+        user = new User({
           email,
           name: githubUser.name || githubUser.login,
           password: crypto.randomBytes(32).toString('hex'),
@@ -58,42 +74,27 @@ export async function callback(req, res) {
           avatar: githubUser.avatar_url,
           isVerified: true,
         });
-        logger.info('User registered via GitHub', { githubId: githubUser.id, username: githubUser.login });
       }
-
-      await storeGitHubToken(user._id, accessToken);
-      user.githubConnected = true;
-      user.githubUsername = githubUser.login;
-      user.avatar = githubUser.avatar_url || user.avatar;
-      await user.save();
-
-      const jwtToken = authService.generateAccessToken(user);
-      const refreshTokenStr = authService.generateRefreshToken();
-      await authService.createRefreshTokenDocument(user._id, refreshTokenStr, true);
-
-      return res.redirect(
-        `${config.frontendUrl}/github-callback.html#access_token=${jwtToken}&refresh_token=${refreshTokenStr}`
-      );
     }
 
-    const userId = stateData.userId;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.redirect(`${config.frontendUrl}/dashboard.html?github=error&msg=user_not_found`);
-    }
-
-    user.githubId = String(githubUser.id);
+    user.githubConnected = true;
     user.githubUsername = githubUser.login;
     user.avatar = githubUser.avatar_url || user.avatar;
     await storeGitHubToken(user._id, accessToken);
     await user.save();
 
-    logger.info('GitHub connected', { userId: user._id, username: githubUser.login });
+    logger.info('User logged in via GitHub', { userId: user._id, username: githubUser.login });
 
-    return res.redirect(`${config.frontendUrl}/dashboard.html?github=connected`);
+    const jwtToken = authService.generateAccessToken(user);
+    const refreshTokenStr = authService.generateRefreshToken();
+    await authService.createRefreshTokenDocument(user._id, refreshTokenStr, true);
+
+    return res.redirect(
+      `${config.frontendUrl}/github-callback.html#access_token=${jwtToken}&refresh_token=${refreshTokenStr}`
+    );
   } catch (err) {
-    logger.error('GitHub callback failed', { error: err.message });
-    return res.redirect(`${config.frontendUrl}/login.html?github=error`);
+    logger.error('GitHub callback failed', { error: err.message, stack: err.stack });
+    return res.redirect(`${config.frontendUrl}/login.html?github=error&msg=${encodeURIComponent(err.message)}`);
   }
 }
 

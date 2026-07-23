@@ -55,6 +55,12 @@
       var apiBase = (typeof LUMORA_CONFIG !== 'undefined') ? LUMORA_CONFIG.API_BASE : 'http://localhost:3070/api';
       window.location.href = apiBase + '/github/login';
     });
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('github') === 'error') {
+        showToast(params.get('msg') ? 'GitHub sign in failed: ' + params.get('msg') : 'GitHub sign in failed', 'error');
+      }
+    })();
   </script>
 </body>
 </html>
