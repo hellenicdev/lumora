@@ -26,6 +26,13 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.5px;
+  text-decoration: none;
+}
+.logo img {
+  height: 28px;
+  width: auto;
+  border-radius: 6px;
+  display: block;
 }
 
 .logo:hover {

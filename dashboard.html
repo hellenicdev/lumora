@@ -3,16 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/lumora/favicon.svg">
+  <link rel="alternate icon" href="/lumora/favicon.ico">
   <title>Dashboard — Lumora</title>
+  <meta name="description" content="Your Lumora dashboard. Manage repositories, documentation, team, and usage.">
+  <meta property="og:title" content="Dashboard — Lumora">
+  <meta property="og:description" content="Your Lumora dashboard. Manage repositories, documentation, team, and usage.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hellenicdev.github.io/lumora/">
   <link rel="stylesheet" href="/lumora/css/main.css">
   <link rel="stylesheet" href="/lumora/css/dashboard.css">
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="/lumora/js/toast.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9FWQFZME3Z"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9FWQFZME3Z');</script>
 </head>
 <body class="dashboard">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/lumora/" class="logo">Lumora</a>
+      <a href="/lumora/" class="logo"><img src="/lumora/logo.png" alt="Lumora"></a>
       <button class="sidebar-close" id="sidebarClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <nav class="sidebar-nav">

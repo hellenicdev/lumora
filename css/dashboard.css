@@ -28,6 +28,12 @@
 .sidebar-header .logo {
   font-size: 20px;
 }
+.sidebar-header .logo img {
+  height: 20px;
+  width: auto;
+  border-radius: 4px;
+  display: block;
+}
 
 .sidebar-close {
   display: none;
