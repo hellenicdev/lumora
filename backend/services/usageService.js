@@ -3,7 +3,7 @@ import UsageRecord from '../models/UsageRecord.js';
 const PLAN_LIMITS = {
   free: {
     repositories: 1,
-    aiQuestions: 100,
+    aiQuestions: 15,
     docGenerations: 5,
     securityScans: 4,
     teamMembers: 0,

@@ -26,7 +26,7 @@
         html += '<h3 style="font-size:20px;margin-bottom:4px">' + plan.name + '</h3>';
 
         if (plan.price === 0) {
-          html += '<div style="font-size:40px;font-weight:700;margin:16px 0 8px">Free</div>';
+          html += '<div style="font-size:40px;font-weight:700;margin:16px 0 8px">$0<span style="font-size:16px;font-weight:400;color:var(--text-muted)">/month</span></div>';
         } else {
           html += '<div style="font-size:40px;font-weight:700;margin:16px 0 8px">$' + plan.price + '<span style="font-size:16px;font-weight:400;color:var(--text-muted)">/mo</span></div>';
         }
