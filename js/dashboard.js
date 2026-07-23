@@ -7,6 +7,7 @@
     initUserMenu();
     initNav();
     initLogoutBtn();
+    initSearch();
     loadUser();
     loadDashboardStats();
     connectSocket();
@@ -102,6 +103,46 @@
         item.classList.add('active');
       });
     });
+  }
+
+  function initSearch() {
+    var input = document.getElementById('globalSearch');
+    if (!input) return;
+
+    function filterCards() {
+      var q = input.value.toLowerCase().trim();
+      var cards = document.querySelectorAll('#repoList .repo-card');
+      cards.forEach(function (card) {
+        card.style.display = (!q || card.textContent.toLowerCase().includes(q)) ? '' : 'none';
+      });
+    }
+
+    if (window.location.pathname.includes('repositories')) {
+      var urlParams = new URLSearchParams(window.location.search);
+      var queryParam = urlParams.get('q');
+      if (queryParam) {
+        input.value = queryParam;
+      }
+
+      input.addEventListener('input', filterCards);
+
+      var list = document.getElementById('repoList');
+      if (list) {
+        var observer = new MutationObserver(function () {
+          if (input.value) filterCards();
+        });
+        observer.observe(list, { childList: true, subtree: true });
+      }
+
+      if (queryParam) setTimeout(filterCards, 100);
+    } else {
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          var q = this.value.trim();
+          window.location.href = '/lumora/repositories.html' + (q ? '?q=' + encodeURIComponent(q) : '');
+        }
+      });
+    }
   }
 
   function showPage(page) {

@@ -1,5 +1,9 @@
 import DocumentationVersion from '../models/DocumentationVersion.js';
 import Repository from '../models/Repository.js';
+import RepositorySnapshot from '../models/RepositorySnapshot.js';
+import GraphNode from '../models/GraphNode.js';
+import GraphEdge from '../models/GraphEdge.js';
+import KnowledgeChunk from '../models/KnowledgeChunk.js';
 import { generateReadme, generateApiDocs } from './readmeGenerator.js';
 import { generateWiki } from './wikiGenerator.js';
 import { buildKnowledgeBase } from './knowledgeService.js';
@@ -72,40 +76,181 @@ export async function generateAllDocs(repositoryId, userId) {
 }
 
 async function generateArchitectureDoc(repositoryId, repo) {
-  return `# Architecture Overview — ${repo.fullName || repo.name}
+  var snapshot = await RepositorySnapshot.findOne({ repositoryId }).sort({ createdAt: -1 }).lean();
+  var nodes = await GraphNode.find({ repositoryId }).lean();
+  var edges = await GraphEdge.find({ repositoryId }).lean();
+  var archChunks = await KnowledgeChunk.find({ repositoryId, type: 'architecture' }).lean();
 
-## Frontend
+  var lines = [];
+  lines.push('# Architecture Overview — ' + (repo.fullName || repo.name));
+  lines.push('');
+  if (repo.description) {
+    lines.push('> ' + repo.description);
+    lines.push('');
+  }
 
-The frontend is built with HTML5, CSS, and vanilla JavaScript (ES Modules).
-It uses a component-based architecture with responsive design and theme support.
+  lines.push('## Project Summary');
+  lines.push('');
+  lines.push('- **Language**: ' + (repo.language || 'Unknown'));
+  lines.push('- **Files**: ' + (repo.filesCount || (snapshot && snapshot.tree ? snapshot.tree.filter(function (f) { return f.type === 'blob'; }).length : 'N/A')));
+  lines.push('- **Default Branch**: ' + (repo.defaultBranch || 'main'));
+  if (repo.size) lines.push('- **Repository Size**: ' + formatSize(repo.size));
+  lines.push('');
 
-## Backend
+  if (snapshot && snapshot.tree && snapshot.tree.length > 0) {
+    var dirs = {};
+    var exts = {};
+    var totalSize = 0;
+    var fileCount = 0;
 
-The backend follows a modular Express.js architecture:
-- **Controllers** handle HTTP requests and responses.
-- **Services** contain business logic.
-- **Models** define data schemas.
-- **Routes** map URLs to controllers.
-- **Middlewares** handle cross-cutting concerns (auth, validation, rate limiting).
+    snapshot.tree.forEach(function (item) {
+      if (item.type !== 'blob') return;
+      fileCount++;
+      if (item.size) totalSize += item.size;
+      var parts = item.path.split('/');
+      if (parts.length > 1) {
+        var root = parts[0];
+        dirs[root] = (dirs[root] || 0) + 1;
+      }
+      var dot = item.path.lastIndexOf('.');
+      if (dot > 0) {
+        var ext = item.path.substring(dot).toLowerCase();
+        exts[ext] = (exts[ext] || 0) + 1;
+      }
+    });
 
-## Database
+    var topDirs = Object.keys(dirs).sort(function (a, b) { return dirs[b] - dirs[a]; }).slice(0, 8);
+    var topExts = Object.keys(exts).sort(function (a, b) { return exts[b] - exts[a]; }).slice(0, 8);
 
-MongoDB with Mongoose ODM for data storage.
+    lines.push('## File Structure');
+    lines.push('');
+    lines.push('| Directory | Files |');
+    lines.push('|-----------|-------|');
+    topDirs.forEach(function (d) {
+      lines.push('| `' + d + '/` | ' + dirs[d] + ' |');
+    });
+    lines.push('');
 
-## Real-time
+    lines.push('## File Types');
+    lines.push('');
+    lines.push('| Extension | Count |');
+    lines.push('|-----------|-------|');
+    topExts.forEach(function (ext) {
+      lines.push('| `' + ext + '` | ' + exts[ext] + ' |');
+    });
+    lines.push('');
+  }
 
-Socket.IO for live updates, progress tracking, and notifications.
+  var routeNodes = nodes.filter(function (n) { return n.type === 'route'; });
+  var modelNodes = nodes.filter(function (n) { return n.type === 'model'; });
+  var serviceNodes = nodes.filter(function (n) { return n.type === 'service'; });
+  var classNodes = nodes.filter(function (n) { return n.type === 'class'; });
+  var funcNodes = nodes.filter(function (n) { return n.type === 'function'; });
+  var depNodes = nodes.filter(function (n) { return n.type === 'dependency'; });
 
-## External Services
+  if (routeNodes.length > 0) {
+    lines.push('## API Routes');
+    lines.push('');
+    lines.push('| Route | File |');
+    lines.push('|-------|------|');
+    routeNodes.forEach(function (r) {
+      lines.push('| `' + (r.name || '') + '` | `' + (r.file || '') + '` |');
+    });
+    lines.push('');
+  }
 
-- GitHub API for repository integration.
-- Cloudflare Turnstile for bot protection.
-- Resend for transactional emails.
-- Groq AI for documentation generation and code understanding.
+  if (modelNodes.length > 0) {
+    lines.push('## Data Models');
+    lines.push('');
+    modelNodes.forEach(function (m) {
+      var meta = m.metadata || {};
+      lines.push('- **' + m.name + '**' + (meta.fields ? ' — Fields: ' + Object.keys(meta.fields).join(', ') : '') + (m.file ? ' (`' + m.file + '`)' : ''));
+    });
+    lines.push('');
+  }
 
----
+  if (serviceNodes.length > 0) {
+    lines.push('## Services');
+    lines.push('');
+    serviceNodes.forEach(function (s) {
+      lines.push('- **' + s.name + '**' + (s.file ? ' (`' + s.file + '`)' : ''));
+    });
+    lines.push('');
+  }
 
-*Architecture documentation auto-generated by Lumora AI.*`;
+  if (classNodes.length > 0) {
+    lines.push('## Classes');
+    lines.push('');
+    classNodes.forEach(function (c) {
+      lines.push('- **' + c.name + '**' + (c.file ? ' (`' + c.file + '`)' : ''));
+    });
+    lines.push('');
+  }
+
+  if (funcNodes.length > 0) {
+    lines.push('## Key Functions');
+    lines.push('');
+    funcNodes.slice(0, 20).forEach(function (f) {
+      lines.push('- `' + f.name + '`' + (f.file ? ' — `' + f.file + '`' : ''));
+    });
+    if (funcNodes.length > 20) {
+      lines.push('- *... and ' + (funcNodes.length - 20) + ' more functions*');
+    }
+    lines.push('');
+  }
+
+  if (depNodes.length > 0) {
+    lines.push('## Dependencies');
+    lines.push('');
+    depNodes.slice(0, 30).forEach(function (d) {
+      var meta = d.metadata || {};
+      lines.push('- **' + d.name + '**' + (meta.version ? ' ' + meta.version : '') + (d.file ? ' — `' + d.file + '`' : ''));
+    });
+    if (depNodes.length > 30) {
+      lines.push('- *... and ' + (depNodes.length - 30) + ' more dependencies*');
+    }
+    lines.push('');
+  }
+
+  if (edges.length > 0) {
+    var edgeTypes = {};
+    edges.forEach(function (e) {
+      edgeTypes[e.type] = (edgeTypes[e.type] || 0) + 1;
+    });
+
+    lines.push('## Module Relationships');
+    lines.push('');
+    lines.push('| Relationship Type | Count |');
+    lines.push('|-------------------|-------|');
+    Object.keys(edgeTypes).sort().forEach(function (t) {
+      lines.push('| `' + t + '` | ' + edgeTypes[t] + ' |');
+    });
+    lines.push('');
+  }
+
+  if (archChunks.length > 0) {
+    lines.push('## Architecture Notes');
+    lines.push('');
+    archChunks.forEach(function (chunk) {
+      lines.push('### ' + chunk.title);
+      lines.push('');
+      lines.push(chunk.content.substring(0, 500));
+      lines.push('');
+    });
+  }
+
+  lines.push('---');
+  lines.push('');
+  lines.push('*Architecture documentation auto-generated by Lumora AI.*');
+
+  return lines.join('\n');
+}
+
+function formatSize(bytes) {
+  if (!bytes) return 'Unknown';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
 export async function generateDocByType(repositoryId, type, userId) {
