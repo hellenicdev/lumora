@@ -109,12 +109,40 @@
     var input = document.getElementById('globalSearch');
     if (!input) return;
 
+    var dropdown = document.getElementById('searchDropdown');
+    var allRepos = [];
+    var dropdownTimer = null;
+
     function filterCards() {
       var q = input.value.toLowerCase().trim();
       var cards = document.querySelectorAll('#repoList .repo-card');
       cards.forEach(function (card) {
         card.style.display = (!q || card.textContent.toLowerCase().includes(q)) ? '' : 'none';
       });
+    }
+
+    function hideDropdown() {
+      if (dropdown) dropdown.classList.remove('open');
+    }
+
+    function showRepoDropdown(q) {
+      if (!dropdown) return;
+      if (!q) { hideDropdown(); return; }
+      var ql = q.toLowerCase();
+      var matches = allRepos.filter(function (r) {
+        return (r.fullName || r.name).toLowerCase().includes(ql);
+      }).slice(0, 8);
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = '<div class="search-dropdown-empty">No repositories match "' + q + '"</div>';
+      } else {
+        dropdown.innerHTML = matches.map(function (r) {
+          return '<a href="/lumora/repository.html?id=' + r._id + '" class="search-dropdown-item">' +
+            '<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (r.fullName || r.name) + '</span>' +
+            '<span class="repo-lang">' + (r.language || '?') + '</span></a>';
+        }).join('');
+      }
+      dropdown.classList.add('open');
     }
 
     if (window.location.pathname.includes('repositories')) {
@@ -136,8 +164,31 @@
 
       if (queryParam) setTimeout(filterCards, 100);
     } else {
+      (async function () {
+        try {
+          var data = await apiRequest('/repositories');
+          allRepos = data.data.repositories || [];
+        } catch {}
+      })();
+
+      input.addEventListener('input', function () {
+        clearTimeout(dropdownTimer);
+        dropdownTimer = setTimeout(function () { showRepoDropdown(input.value); }, 200);
+      });
+
+      input.addEventListener('focus', function () {
+        if (input.value) showRepoDropdown(input.value);
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('.search-bar')) hideDropdown();
+      });
+
       input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
+        if (e.key === 'Escape') hideDropdown();
+        if (e.key === 'Enter' && dropdown) {
+          var first = dropdown.querySelector('.search-dropdown-item');
+          if (first) { window.location.href = first.getAttribute('href'); return; }
           var q = this.value.trim();
           window.location.href = '/lumora/repositories.html' + (q ? '?q=' + encodeURIComponent(q) : '');
         }
