@@ -12,7 +12,7 @@
 
   document.title = 'Shared Report - Lumora';
 
-  fetch(`${API_BASE}/api/reports/shared/${slug}`)
+  fetch(`${API_BASE}/reports/shared/${slug}`)
     .then(r => r.json())
     .then(res => {
       if (!res.success) {

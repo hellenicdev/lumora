@@ -1,5 +1,6 @@
 (function () {
   var API_BASE = (typeof LUMORA_CONFIG !== 'undefined') ? LUMORA_CONFIG.API_BASE : 'http://localhost:3070/api';
+  window.API_BASE = API_BASE;
   var accessToken = localStorage.getItem('lumora-access-token');
   var refreshToken = localStorage.getItem('lumora-refresh-token');
 
