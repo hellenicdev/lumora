@@ -2,7 +2,8 @@
   const container = document.getElementById('report-content');
   if (!container) return;
 
-  const slug = window.location.pathname.replace('/lumora/shared-report.html', '').replace(/^\/+/, '').split('?')[0] || '';
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug') || '';
 
   if (!slug) {
     container.innerHTML = '<div class="error">No report slug specified.</div>';

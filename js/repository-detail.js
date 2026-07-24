@@ -402,7 +402,7 @@
         body: { type: 'onboarding', expiresInDays: 30 },
       });
       var slug = data.data.report.slug;
-      var url = window.location.origin + '/lumora/shared-report.html/' + slug;
+      var url = window.location.origin + '/lumora/shared-report.html?slug=' + slug;
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
         alert('Report link copied to clipboard!');
