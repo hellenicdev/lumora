@@ -1,29 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shared Report - Lumora</title>
-  <meta name="robots" content="noindex">
+  <title>Shared Report — Lumora</title>
+  <meta name="robots" content="noindex,nofollow">
   <base href="/lumora/">
+  <link rel="icon" type="image/svg+xml" href="/lumora/favicon.svg">
+  <link rel="alternate icon" href="/lumora/favicon.ico">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/reports.css">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9FWQFZME3Z"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9FWQFZME3Z');</script>
+  <style>
+    .report-page { min-height: calc(100vh - 140px); display: flex; flex-direction: column; }
+    .report-body { flex: 1; }
+  </style>
 </head>
 <body>
   <nav class="navbar">
     <div class="container">
-      <a href="." class="logo">Lumora</a>
+      <a href="." class="logo"><img src="logo.png" alt="Lumora" width="1254" height="1254"></a>
       <div class="nav-links">
         <a href="." class="nav-link">Home</a>
+        <a href="https://github.com/hellenicdev/lumora" class="nav-link" target="_blank" rel="noopener">GitHub</a>
       </div>
     </div>
   </nav>
 
-  <main class="main">
-    <div class="container">
+  <main class="main report-page">
+    <div class="container report-body">
       <div id="report-content" class="report-container">
-        <div class="loading">Loading shared report...</div>
+        <div class="report-loading">
+          <div class="report-loading-spinner">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <p>Loading report...</p>
+          <div class="report-loading-skeleton">
+            <div class="skeleton" style="height:32px;width:240px;margin:0 auto 16px"></div>
+            <div class="skeleton" style="height:16px;width:320px;margin:0 auto 12px"></div>
+            <div class="skeleton" style="height:80px;width:100%;margin-top:24px"></div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -34,6 +52,7 @@
     </div>
   </footer>
 
+  <script src="js/theme.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/report.js"></script>
