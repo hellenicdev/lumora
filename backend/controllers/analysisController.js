@@ -1,5 +1,7 @@
 import { calculateHealthScore } from '../services/healthService.js';
 import { scanRepository, getSecurityReport, resolveIncident, dismissIncident } from '../services/securityService.js';
+import { generatePersonality } from '../services/personalityService.js';
+import { generateArchitectureDiagram, getArchitectureInsights as getArchitectureInsightsService } from '../services/architectureService.js';
 import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
 import { recordUsage } from '../middlewares/usage.js';
@@ -60,6 +62,15 @@ export async function dismissSecurityIncident(req, res) {
   }
 }
 
+export async function getPersonality(req, res) {
+  try {
+    const personality = await generatePersonality(req.params.id);
+    return success(res, { personality });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+}
+
 export async function analyzeImpact(req, res) {
   try {
     const { file } = req.body;
@@ -68,6 +79,24 @@ export async function analyzeImpact(req, res) {
     const { generateChangeImpact } = await import('../services/chatService.js');
     const analysis = await generateChangeImpact(req.params.id, file);
     return success(res, { analysis });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+}
+
+export async function getArchitecture(req, res) {
+  try {
+    const diagram = await generateArchitectureDiagram(req.params.id);
+    return success(res, { diagram });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+}
+
+export async function getArchitectureInsights(req, res) {
+  try {
+    const insights = await getArchitectureInsightsService(req.params.id);
+    return success(res, { insights });
   } catch (err) {
     return error(res, err.message, 500);
   }

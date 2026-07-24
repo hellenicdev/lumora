@@ -11,5 +11,8 @@ router.post('/:id/security/scan', authenticate, enforceLimit('securityScans'), a
 router.post('/:id/security/:incidentId/resolve', authenticate, analysisController.resolveSecurityIncident);
 router.post('/:id/security/:incidentId/dismiss', authenticate, analysisController.dismissSecurityIncident);
 router.post('/:id/impact', authenticate, analysisController.analyzeImpact);
+router.get('/:id/personality', authenticate, analysisController.getPersonality);
+router.get('/:id/architecture', authenticate, analysisController.getArchitecture);
+router.get('/:id/architecture/insights', authenticate, analysisController.getArchitectureInsights);
 
 export default router;

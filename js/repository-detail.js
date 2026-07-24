@@ -63,6 +63,12 @@
     var resyncBtn = getEl('resyncBtn');
     if (resyncBtn) resyncBtn.addEventListener('click', resyncRepo);
 
+    var shareBtn = getEl('shareReportBtn');
+    if (shareBtn) shareBtn.addEventListener('click', shareReport);
+
+    var onboardingBtn = getEl('onboardingBtn');
+    if (onboardingBtn) onboardingBtn.addEventListener('click', generateOnboardingReport);
+
     window.addEventListener('beforeunload', cleanup);
   });
 
@@ -147,11 +153,47 @@
         <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Status</h3><p style="font-size:18px;font-weight:600">${repoData.analysisStatus}</p></div>
         <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Branch</h3><p style="font-size:18px;font-weight:600">${repoData.defaultBranch || 'main'}</p></div>
       </div>
+      <div id="overviewPersonality" style="margin-top:16px"></div>
       <div class="card" style="margin-top:16px">
         <h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Import Date</h3>
         <p style="font-size:15px">${new Date(repoData.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
     `;
+
+    loadPersonality();
+    loadOverviewHealth();
+  }
+
+  async function loadPersonality() {
+    try {
+      const data = await apiRequest('/repositories/' + repoId + '/personality');
+      var personality = data.data.personality;
+      if (!personality) return;
+      var container = getEl('overviewPersonality');
+      if (!container) return;
+      container.innerHTML = '<div class="card" style="padding:16px 20px">' +
+        '<div style="display:flex;align-items:flex-start;gap:10px">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
+        '<div style="font-size:13px;line-height:1.5;color:var(--text-secondary)">' + personality.personality + '</div>' +
+        '</div></div>';
+    } catch {}
+  }
+
+  async function loadOverviewHealth() {
+    try {
+      const data = await apiRequest('/repositories/' + repoId + '/health');
+      var health = data.data.health;
+      if (!health) return;
+      var container = getEl('overviewPersonality');
+      if (!container) return;
+      var scoreColor = health.overall >= 70 ? 'var(--success)' : health.overall >= 40 ? 'var(--warning)' : 'var(--error)';
+      container.innerHTML += '<div class="card" style="padding:16px 20px;margin-top:12px;display:flex;align-items:center;gap:16px">' +
+        '<div style="font-size:36px;font-weight:800;color:' + scoreColor + '">' + health.overall + '</div>' +
+        '<div><div style="font-size:13px;font-weight:600">Health Score</div>' +
+        '<div style="font-size:12px;color:var(--text-muted);margin-top:2px">' +
+        Object.entries(health.categories).map(function (kv) { return kv[1].score; }).join(' · ') +
+        '</div></div></div>';
+    } catch {}
   }
 
   async function loadFiles() {
@@ -348,6 +390,59 @@
     }
   }
 
+  async function shareReport() {
+    var btn = getEl('shareReportBtn');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = 'Sharing...';
+
+    try {
+      const data = await apiRequest('/reports/' + repoId + '/share', {
+        method: 'POST',
+        body: { type: 'onboarding', expiresInDays: 30 },
+      });
+      var slug = data.data.report.slug;
+      var url = window.location.origin + '/lumora/shared-report.html/' + slug;
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        alert('Report link copied to clipboard!');
+      } else {
+        prompt('Copy this link to share:', url);
+      }
+    } catch (err) {
+      alert('Failed to share: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Share';
+    }
+  }
+
+  async function generateOnboardingReport() {
+    var btn = getEl('onboardingBtn');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+
+    try {
+      const data = await apiRequest('/reports/' + repoId + '/onboarding');
+      var report = data.data.report;
+      var text = 'Onboarding Report: ' + report.repoName + '\n' +
+        'Score: ' + Math.round(report.overallScore) + '/100\n' +
+        'Files: ' + report.filesCount + '\n' +
+        'Technologies: ' + (report.technologies || []).join(', ') + '\n' +
+        'Entry Points: ' + (report.entryPoints || []).slice(0, 5).join(', ') + '\n' +
+        'Dependencies: ' + (report.dependencies ? report.dependencies.total : 0) + '\n' +
+        'Security Concerns: ' + (report.securityConcerns || []).length + '\n' +
+        'Generated: ' + new Date(report.generatedAt).toLocaleString();
+      alert(text);
+    } catch (err) {
+      alert('Failed to generate: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Report';
+    }
+  }
+
   async function loadGraph() {
     var container = getEl('graphContainer');
     if (!container) return;
@@ -365,7 +460,39 @@
       }
 
       container.innerHTML = '';
-      renderGraph(container, nodes, edges);
+      var graphSvg = document.createElement('div');
+      container.appendChild(graphSvg);
+      renderGraph(graphSvg, nodes, edges);
+
+      var insightContainer = document.createElement('div');
+      insightContainer.style.marginTop = '16px';
+      container.appendChild(insightContainer);
+
+      try {
+        const archData = await apiRequest('/repositories/' + repoId + '/architecture');
+        var arch = archData.data.diagram;
+        if (arch && arch.modules) {
+          var info = '<div class="card" style="padding:16px"><div style="font-size:14px;font-weight:600;margin-bottom:8px">Module Breakdown</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+          arch.modules.forEach(function (m) {
+            info += '<span style="background:var(--bg-subtle);border:1px solid var(--border-color);border-radius:6px;padding:4px 10px;font-size:13px">' + escapeHtml(m.name) + ' <span style="color:var(--text-muted);font-size:11px">' + m.fileCount + ' files</span></span>';
+          });
+          info += '</div></div>';
+
+          if (arch.moduleEdges && arch.moduleEdges.length > 0) {
+            info += '<div class="card" style="padding:16px;margin-top:12px"><div style="font-size:14px;font-weight:600;margin-bottom:8px">Module Dependencies</div>';
+            arch.moduleEdges.slice(0, 10).forEach(function (e) {
+              info += '<div style="font-size:13px;padding:2px 0;color:var(--text-secondary)">' + escapeHtml(e.source) + ' → ' + escapeHtml(e.target) + ' <span style="color:var(--text-muted);font-size:11px">(' + e.weight + ' connections)</span></div>';
+            });
+            if (arch.moduleEdges.length > 10) {
+              info += '<div style="font-size:12px;color:var(--text-muted);margin-top:4px">...and ' + (arch.moduleEdges.length - 10) + ' more</div>';
+            }
+            info += '</div>';
+          }
+
+          insightContainer.innerHTML = info;
+        }
+      } catch (e) {
+      }
     } catch (err) {
       container.innerHTML = '<p style="color:var(--error)">Failed to load graph: ' + err.message + '</p>';
     }

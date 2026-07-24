@@ -25,6 +25,22 @@ const securityIncidentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  confidence: {
+    type: String,
+    enum: ['high', 'medium', 'low'],
+    default: 'high',
+  },
+  source: {
+    type: String,
+    enum: ['rule', 'ai'],
+    default: 'rule',
+  },
+  explanation: { type: String },
+  detectionLayer: {
+    type: String,
+    enum: ['regex', 'entropy', 'ai', 'validation'],
+    default: 'regex',
+  },
 }, {
   timestamps: true,
 });

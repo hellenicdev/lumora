@@ -5,6 +5,7 @@ import repositoryRoutes from './repositories.js';
 import documentationRoutes from './documentation.js';
 import chatRoutes from './chat.js';
 import analysisRoutes from './analysis.js';
+import reportRoutes from './reports.js';
 import organizationRoutes from './organizations.js';
 import billingRoutes from './billing.js';
 import config from '../config/index.js';
@@ -20,6 +21,7 @@ if (config.github.clientId && config.github.clientSecret) {
 router.use('/repositories', repositoryRoutes);
 router.use('/repositories', documentationRoutes);
 router.use('/repositories', analysisRoutes);
+router.use('/reports', reportRoutes);
 router.use('/chat', chatRoutes);
 router.use('/organizations', organizationRoutes);
 router.use('/billing', billingRoutes);
