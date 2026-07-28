@@ -71,7 +71,11 @@
             config.headers = reqHeaders;
             var retryResponse = await fetch(API_BASE + endpoint, config);
             var retryContentType = retryResponse.headers.get('content-type') || '';
-            return retryContentType.includes('json') ? retryResponse.json() : {};
+            var retryData = retryContentType.includes('json') ? await retryResponse.json() : {};
+            if (!retryResponse.ok) {
+              throw new Error(retryData.error || 'Request failed');
+            }
+            return retryData;
           }
         }
         throw new Error(data.error || 'Request failed');

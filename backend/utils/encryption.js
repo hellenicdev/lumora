@@ -1,8 +1,12 @@
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
+const rawKey = process.env.ENCRYPTION_KEY;
+if (!rawKey) {
+  throw new Error('ENCRYPTION_KEY environment variable is required');
+}
 const KEY = crypto.scryptSync(
-  process.env.ENCRYPTION_KEY || 'lumora-default-encryption-key-change-me',
+  rawKey,
   'lumora-salt',
   32,
 );
@@ -17,13 +21,20 @@ export function encrypt(text) {
 }
 
 export function decrypt(encryptedText) {
-  const parts = encryptedText.split(':');
-  const iv = Buffer.from(parts[0], 'hex');
-  const authTag = Buffer.from(parts[1], 'hex');
-  const encrypted = parts[2];
-  const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
-  decipher.setAuthTag(authTag);
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
+  try {
+    const parts = encryptedText.split(':');
+    if (parts.length !== 3) {
+      throw new Error('Invalid encrypted text format');
+    }
+    const iv = Buffer.from(parts[0], 'hex');
+    const authTag = Buffer.from(parts[1], 'hex');
+    const encrypted = parts[2];
+    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
+    decipher.setAuthTag(authTag);
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (err) {
+    throw new Error('Decryption failed: ' + err.message);
+  }
 }

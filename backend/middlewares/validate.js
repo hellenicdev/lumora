@@ -4,14 +4,15 @@ export function validate(schema) {
 
     for (const [field, rules] of Object.entries(schema)) {
       const value = req.body[field];
+      const isMissing = value === undefined || value === null;
 
       for (const rule of rules) {
-        if (rule.required && (!value || (typeof value === 'string' && !value.trim()))) {
+        if (rule.required && (isMissing || (typeof value === 'string' && !value.trim()))) {
           errors.push(`${field} is required`);
           break;
         }
 
-        if (value) {
+        if (!isMissing) {
           if (rule.minLength && value.length < rule.minLength) {
             errors.push(`${field} must be at least ${rule.minLength} characters`);
           }

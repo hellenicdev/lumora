@@ -7,14 +7,16 @@ let client = null;
 function getClient() {
   if (client) return client;
 
+  const apiKey = config.ai.apiKey || config.ai.groqApiKey;
+
   if (config.ai.provider === 'groq') {
     client = new OpenAI({
-      apiKey: config.ai.groqApiKey,
+      apiKey,
       baseURL: 'https://api.groq.com/openai/v1',
     });
   } else {
     client = new OpenAI({
-      apiKey: config.ai.groqApiKey,
+      apiKey,
     });
   }
 

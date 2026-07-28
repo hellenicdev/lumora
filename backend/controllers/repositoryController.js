@@ -17,6 +17,14 @@ import { logger } from '../utils/logger.js';
 import { logAuditEvent } from '../utils/audit.js';
 import { recordUsage } from '../middlewares/usage.js';
 
+function parseFullName(fullName) {
+  if (!fullName || !fullName.includes('/')) {
+    throw new Error('Invalid repository fullName format');
+  }
+  const parts = fullName.split('/');
+  return [parts[0], parts.slice(1).join('/')];
+}
+
 export async function list(req, res) {
   try {
     const repos = await Repository.find({ userId: req.user._id })
@@ -175,7 +183,7 @@ export async function getGraphData(req, res) {
 
         if (tree) {
           const accessToken = await getAccessTokenForUser(req.user._id);
-          const [owner, name] = repo.fullName.split('/');
+          const [owner, name] = parseFullName(repo.fullName);
           const repoInfo = { ...repo.toObject(), name, fullName: repo.fullName };
           const results = await scanRepository(req.params.id, accessToken, repoInfo, tree);
           await buildGraph(req.params.id, results);
@@ -203,7 +211,7 @@ export async function resync(req, res) {
       return error(res, 'Repository not found', 404);
     }
 
-    const [owner, name] = repo.fullName.split('/');
+    const [owner, name] = parseFullName(repo.fullName);
 
     await Promise.all([
       RepositorySnapshot.deleteMany({ repositoryId: repo._id }),
@@ -277,12 +285,17 @@ export async function getFileContent(req, res) {
       return error(res, 'Repository not found', 404);
     }
 
-    const [owner, name] = repo.fullName.split('/');
+    const path = req.query.path;
+    if (!path || typeof path !== 'string' || !path.trim()) {
+      return error(res, 'File path is required', 400);
+    }
+
+    const [owner, name] = parseFullName(repo.fullName);
     const content = await fetchFileContent(
       req.user._id,
       owner,
       name,
-      req.query.path,
+      path.trim(),
       req.query.ref || repo.lastCommit || repo.defaultBranch,
     );
 

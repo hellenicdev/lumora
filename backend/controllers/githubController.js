@@ -10,7 +10,10 @@ import { logger } from '../utils/logger.js';
 const pendingStates = new Map();
 
 export function login(req, res) {
-  const url = githubOAuth.getLoginAuthorizationUrl();
+  const state = crypto.randomBytes(16).toString('hex');
+  pendingStates.set(state, { type: 'login' });
+  setTimeout(function () { pendingStates.delete(state); }, 600000);
+  const url = githubOAuth.getAuthorizationUrl(state);
   return res.redirect(url);
 }
 
@@ -30,11 +33,17 @@ export async function callback(req, res) {
       return res.redirect(`${config.frontendUrl}/login.html?github=error&msg=no_code`);
     }
 
-    const accessToken = await githubOAuth.exchangeCodeForToken(code);
-    const githubUser = await githubOAuth.fetchGitHubUser(accessToken);
-
     const stateData = state ? pendingStates.get(state) : null;
     if (state && stateData) pendingStates.delete(state);
+
+    // Reject if a state was sent back but we don't recognize it (expired or forged)
+    if (state && !stateData) {
+      logger.warn('GitHub callback rejected: invalid or expired state');
+      return res.redirect(`${config.frontendUrl}/login.html?github=error&msg=invalid_state`);
+    }
+
+    const accessToken = await githubOAuth.exchangeCodeForToken(code);
+    const githubUser = await githubOAuth.fetchGitHubUser(accessToken);
 
     if (stateData && stateData.type === 'connect') {
       const user = await User.findById(stateData.userId);

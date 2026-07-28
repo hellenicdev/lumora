@@ -35,6 +35,7 @@ const config = {
   },
   ai: {
     provider: process.env.AI_PROVIDER || 'groq',
+    apiKey: process.env.AI_API_KEY || process.env.GROQ_API_KEY,
     groqApiKey: process.env.GROQ_API_KEY,
     groqModel: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
     groqModelFast: process.env.GROQ_MODEL_FAST || 'llama-3.1-8b-instant',
@@ -44,5 +45,14 @@ const config = {
     webhookToken: process.env.KOFI_WEBHOOK_TOKEN,
   },
 };
+
+if (config.nodeEnv === 'production') {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is required in production');
+  }
+  if (!process.env.JWT_REFRESH_SECRET) {
+    throw new Error('JWT_REFRESH_SECRET is required in production');
+  }
+}
 
 export default config;
