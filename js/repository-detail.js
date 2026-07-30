@@ -314,6 +314,7 @@
     if (tab === 'routes') loadRoutes();
     if (tab === 'dependencies') loadDependencies();
     if (tab === 'graph') loadGraph();
+    if (tab === 'cicd') loadCICD();
   }
 
   async function loadRoutes() {
@@ -495,6 +496,136 @@
       }
     } catch (err) {
       container.innerHTML = '<p style="color:var(--error)">Failed to load graph: ' + err.message + '</p>';
+    }
+  }
+
+  async function loadCICD() {
+    var statusEl = getEl('webhookStatus');
+    if (!statusEl) return;
+
+    try {
+      const data = await apiRequest('/repositories/' + repoId + '/webhook/status');
+      var webhook = data.data.webhook;
+      renderWebhookStatus(webhook);
+    } catch (err) {
+      statusEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem 0">' + escapeHtml(err.message) + '</p>';
+    }
+  }
+
+  function renderWebhookStatus(webhook) {
+    var statusEl = getEl('webhookStatus');
+    var setupBtn = getEl('setupWebhookBtn');
+    var disableBtn = getEl('disableWebhookBtn');
+    if (!statusEl) return;
+
+    if (!webhook || !webhook.active) {
+      statusEl.innerHTML =
+        '<div style="text-align:center;padding:2rem 0">' +
+          '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin-bottom:1rem">' +
+            '<path d="M18 8a6 6 0 01-6 6m0 0a6 6 0 01-6-6m6 6v10M6 2l6 3 6-3"/>' +
+          '</svg>' +
+          '<h3 style="font-size:1.1rem;margin-bottom:0.5rem">Webhook not configured</h3>' +
+          '<p style="color:var(--text-secondary);font-size:0.9rem;max-width:500px;margin:0 auto 1.5rem;line-height:1.5">' +
+            'Enable the webhook to automatically re-analyze your repository whenever you push to GitHub. ' +
+            'Lumora will regenerate documentation, security scans, and architecture maps on every push.' +
+          '</p>' +
+        '</div>';
+      if (setupBtn) setupBtn.style.display = '';
+      if (disableBtn) disableBtn.style.display = 'none';
+      if (setupBtn && !setupBtn._listener) {
+        setupBtn._listener = true;
+        setupBtn.addEventListener('click', setupWebhook);
+      }
+      return;
+    }
+
+    var statusClass = webhook.lastStatus === 'success' ? 'var(--color-success)' : webhook.lastStatus === 'failure' ? 'var(--color-danger)' : 'var(--text-muted)';
+    var statusIcon = webhook.lastStatus === 'success' ? '✓' : webhook.lastStatus === 'failure' ? '✗' : '—';
+
+    statusEl.innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem">' +
+        '<div class="card" style="padding:1rem;text-align:center">' +
+          '<div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:0.25rem">Status</div>' +
+          '<div style="font-size:1.1rem;font-weight:600;color:' + statusClass + '">' + (webhook.active ? 'Active' : 'Disabled') + '</div>' +
+        '</div>' +
+        '<div class="card" style="padding:1rem;text-align:center">' +
+          '<div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:0.25rem">Last Delivery</div>' +
+          '<div style="font-size:1.1rem;font-weight:600">' + statusIcon + ' ' + (webhook.lastDelivery ? new Date(webhook.lastDelivery).toLocaleString() : 'Never') + '</div>' +
+        '</div>' +
+        '<div class="card" style="padding:1rem;text-align:center">' +
+          '<div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:0.25rem">Events</div>' +
+          '<div style="font-size:1.1rem;font-weight:600">' + (webhook.events || ['push']).join(', ') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" style="padding:1rem;margin-bottom:1rem">' +
+        '<div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.5rem">Webhook URL</div>' +
+        '<div style="display:flex;gap:0.5rem">' +
+          '<input type="text" class="input" id="webhookUrlInput" value="' + escapeHtml(webhook.webhookUrl || '') + '" readonly style="flex:1;font-family:monospace;font-size:0.85rem;padding:0.5rem 0.75rem;background:var(--bg-subtle);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary)">' +
+          '<button class="btn btn-secondary" id="copyWebhookUrlBtn" style="white-space:nowrap">Copy</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" style="padding:1rem">' +
+        '<div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.5rem">Secret</div>' +
+        '<input type="text" class="input" value="' + escapeHtml(webhook.secret || '') + '" readonly style="width:100%;font-family:monospace;font-size:0.85rem;padding:0.5rem 0.75rem;background:var(--bg-subtle);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary)">' +
+      '</div>';
+
+    if (setupBtn) setupBtn.style.display = 'none';
+    if (disableBtn) disableBtn.style.display = '';
+    if (disableBtn && !disableBtn._listener) {
+      disableBtn._listener = true;
+      disableBtn.addEventListener('click', disableWebhook);
+    }
+
+    var copyBtn = getEl('copyWebhookUrlBtn');
+    if (copyBtn && !copyBtn._listener) {
+      copyBtn._listener = true;
+      copyBtn.addEventListener('click', function () {
+        var input = getEl('webhookUrlInput');
+        if (input) {
+          input.select();
+          navigator.clipboard.writeText(input.value).catch(function () {});
+          copyBtn.textContent = 'Copied!';
+          setTimeout(function () { copyBtn.textContent = 'Copy'; }, 2000);
+        }
+      });
+    }
+  }
+
+  async function setupWebhook() {
+    var btn = getEl('setupWebhookBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Setting up...';
+    }
+    try {
+      const data = await apiRequest('/repositories/' + repoId + '/webhook/setup', { method: 'POST' });
+      renderWebhookStatus(data.data.webhook);
+    } catch (err) {
+      alert('Failed to setup webhook: ' + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Enable Webhook';
+      }
+    }
+  }
+
+  async function disableWebhook() {
+    var btn = getEl('disableWebhookBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Disabling...';
+    }
+    try {
+      const data = await apiRequest('/repositories/' + repoId + '/webhook/disable', { method: 'POST' });
+      renderWebhookStatus(data.data.webhook);
+    } catch (err) {
+      alert('Failed to disable webhook: ' + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Disable';
+      }
     }
   }
 

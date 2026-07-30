@@ -15,7 +15,7 @@
   <style>
     .report-page { min-height: calc(100vh - 140px); display: flex; flex-direction: column; }
     .report-body { flex: 1; }
-    .logo img { height: 42px; width: auto; display: block; }
+    .logo img { height: 48px; width: auto; display: block; }
   </style>
 </head>
 <body>
@@ -57,5 +57,13 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/report.js"></script>
+<div class="cookie-consent" id="cookieConsent">
+  <p>We use cookies to improve your experience. <a href="/lumora/privacy.html">Learn more</a></p>
+  <div class="cookie-buttons">
+    <button class="btn btn-ghost" id="cookieDecline">Decline</button>
+    <button class="btn btn-primary" id="cookieAccept">Accept</button>
+  </div>
+</div>
+<script src="js/cookie-consent.js"></script>
 </body>
 </html>

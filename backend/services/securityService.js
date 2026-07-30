@@ -264,6 +264,14 @@ async function notifyCritical(userId, repo, incident) {
         html: buildSecurityAlertEmail(repo, incident),
       });
     }
+
+    const { notifyIntegrations } = await import('./integrationService.js');
+    await notifyIntegrations(userId, 'security_alert', {
+      type: 'security_alert',
+      title: '🔑 Secret detected in ' + repo.name,
+      message: `${incident.type} found in ${repo.fullName}/${incident.file}:${incident.line}. Severity: ${incident.severity}.`,
+      link: `${process.env.FRONTEND_URL || 'http://localhost:3070'}/lumora/health.html?id=${repo._id}`,
+    });
   } catch (err) {
     logger.error('Failed to send security alert', { userId, error: err.message });
   }

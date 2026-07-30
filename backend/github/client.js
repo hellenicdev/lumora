@@ -2,31 +2,84 @@ import { Octokit } from 'octokit';
 import { encrypt, decrypt } from '../utils/encryption.js';
 import User from '../models/User.js';
 
+function getToken(user) {
+  if (user.githubAccessToken) return decrypt(user.githubAccessToken);
+  if (user.githubPat) return decrypt(user.githubPat);
+  return null;
+}
+
 export async function getOctokitForUser(userId) {
   const user = await User.findById(userId);
-  if (!user || !user.githubAccessToken) {
-    throw new Error('GitHub not connected');
-  }
+  if (!user) throw new Error('GitHub not connected');
 
-  const token = decrypt(user.githubAccessToken);
+  const token = getToken(user);
+  if (!token) throw new Error('GitHub not connected');
+
   return new Octokit({ auth: token });
 }
 
 export async function getAccessTokenForUser(userId) {
   const user = await User.findById(userId);
-  if (!user || !user.githubAccessToken) {
-    throw new Error('GitHub not connected');
-  }
+  if (!user) throw new Error('GitHub not connected');
 
-  return decrypt(user.githubAccessToken);
+  const token = getToken(user);
+  if (!token) throw new Error('GitHub not connected');
+
+  return token;
 }
 
 export async function storeGitHubToken(userId, token) {
   const encrypted = encrypt(token);
   await User.findByIdAndUpdate(userId, {
     githubAccessToken: encrypted,
+    githubPat: null,
     githubConnected: true,
   });
+}
+
+export async function storeGitHubPat(userId, token) {
+  const encrypted = encrypt(token);
+  await User.findByIdAndUpdate(userId, {
+    githubPat: encrypted,
+    githubConnected: true,
+  });
+}
+
+export async function removeGitHubConnection(userId) {
+  await User.findByIdAndUpdate(userId, {
+    githubAccessToken: null,
+    githubPat: null,
+    githubConnected: false,
+    githubId: null,
+    githubUsername: null,
+  });
+}
+
+export async function validatePat(token) {
+  const octokit = new Octokit({ auth: token });
+  const { data: user } = await octokit.rest.users.getAuthenticated();
+  const { data: repos } = await octokit.rest.repos.listForAuthenticatedUser({
+    per_page: 100,
+    sort: 'updated',
+    direction: 'desc',
+  });
+  return {
+    user: { id: user.id, login: user.login, avatar: user.avatar_url, name: user.name },
+    repositories: repos.map(function (r) {
+      return {
+        id: r.id,
+        name: r.name,
+        fullName: r.full_name,
+        description: r.description,
+        private: r.private,
+        language: r.language,
+        defaultBranch: r.default_branch,
+        updatedAt: r.updated_at,
+        htmlUrl: r.html_url,
+        cloneUrl: r.clone_url,
+      };
+    }),
+  };
 }
 
 export async function fetchRepoContents(userId, owner, repo, path = '') {

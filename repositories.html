@@ -32,6 +32,9 @@
       <a href="/lumora/chat.html" class="nav-item">AI Chat</a>
       <a href="/lumora/health.html" class="nav-item">Health</a>
       <a href="/lumora/team.html" class="nav-item">Team</a>
+      <div class="nav-section-label">Organization</div>
+      <a href="/lumora/audit.html" class="nav-item">Audit Log</a>
+      <a href="/lumora/integrations.html" class="nav-item">Integrations</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user" id="userMenuTrigger">
@@ -96,6 +99,17 @@
         <h3>Connect your GitHub account</h3>
         <p>Import repositories and let Lumora analyze your codebase automatically.</p>
         <button id="githubConnectBtn" class="btn btn-primary btn-lg">Connect GitHub</button>
+        <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-color)">
+          <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">Don't want to grant full OAuth access? Use a <strong>fine-grained PAT</strong> with access to only the repos you choose.</p>
+          <div style="display:flex;gap:0.5rem;max-width:500px;margin:0 auto">
+            <input type="password" id="patInput" class="input" placeholder="github_pat_..." style="flex:1;font-family:monospace;font-size:0.85rem">
+            <button id="patConnectBtn" class="btn btn-secondary" style="white-space:nowrap">Connect</button>
+          </div>
+          <div id="patError" style="color:var(--color-danger);font-size:0.82rem;margin-top:0.5rem;display:none"></div>
+          <div style="margin-top:0.5rem">
+            <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener" style="font-size:0.8rem;color:var(--accent-primary)">Create a fine-grained token →</a>
+          </div>
+        </div>
       </div>
 
       <div id="repoSection" style="display:none">
@@ -156,5 +170,13 @@
   <script src="/lumora/js/api.js"></script>
   <script src="/lumora/js/dashboard.js"></script>
   <script src="/lumora/js/repositories.js"></script>
+<div class="cookie-consent" id="cookieConsent">
+  <p>We use cookies to improve your experience. <a href="/lumora/privacy.html">Learn more</a></p>
+  <div class="cookie-buttons">
+    <button class="btn btn-ghost" id="cookieDecline">Decline</button>
+    <button class="btn btn-primary" id="cookieAccept">Accept</button>
+  </div>
+</div>
+<script src="/lumora/js/cookie-consent.js"></script>
 </body>
 </html>

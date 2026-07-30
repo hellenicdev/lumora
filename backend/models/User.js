@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema({
   githubId: String,
   githubUsername: String,
   githubAccessToken: String,
+  githubPat: String,
   githubConnected: { type: Boolean, default: false },
   avatar: String,
   refreshTokens: [{

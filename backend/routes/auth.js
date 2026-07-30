@@ -32,5 +32,7 @@ router.post('/change-password', authenticate, validate({ currentPassword: [{ req
 router.get('/usage', authenticate, authController.getMyUsage);
 router.get('/dashboard-stats', authenticate, authController.getDashboardStats);
 router.post('/activate-plan', authenticate, authController.activatePlan);
+router.get('/export-data', authenticate, authController.exportData);
+router.delete('/delete-account', authenticate, authController.deleteAccount);
 
 export default router;

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/lumora/favicon.svg">
+  <link rel="alternate icon" href="/lumora/favicon.ico">
+  <title>Privacy Policy — Lumora</title>
+  <meta name="description" content="Lumora privacy policy. Learn how we collect, use, and protect your data.">
+  <meta property="og:title" content="Privacy Policy — Lumora">
+  <meta property="og:description" content="How Lumora handles your data.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hellenicdev.github.io/lumora/">
+  <link rel="stylesheet" href="/lumora/css/main.css">
+  <link rel="stylesheet" href="/lumora/css/landing.css">
+<script src="/lumora/js/toast.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9FWQFZME3Z"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9FWQFZME3Z');</script>
+<style>
+  .privacy-page { max-width: 800px; margin: 0 auto; padding: 60px 24px; }
+  .privacy-page h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+  .privacy-page .last-updated { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 2rem; }
+  .privacy-page h2 { font-size: 1.3rem; margin: 2rem 0 0.75rem; }
+  .privacy-page p, .privacy-page li { color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; }
+  .privacy-page ul { padding-left: 1.5rem; }
+  .privacy-page li { margin-bottom: 0.4rem; }
+  .privacy-page a { color: var(--accent-primary); }
+</style>
+</head>
+<body class="dashboard">
+  <nav class="navbar" style="position:static;background:var(--bg-card)">
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between">
+      <a href="/lumora/" class="logo" style="font-size:1.25rem;font-weight:700">Lumora</a>
+      <a href="/lumora/" class="btn btn-ghost" style="font-size:0.9rem">&larr; Back to Home</a>
+    </div>
+  </nav>
+
+  <div class="privacy-page">
+    <h1>Privacy Policy</h1>
+    <p class="last-updated">Last updated: July 30, 2026</p>
+
+    <h2>1. What We Collect</h2>
+    <p>When you use Lumora, we collect:</p>
+    <ul>
+      <li><strong>Account data</strong> — email address, name, and hashed password (if you register via email).</li>
+      <li><strong>GitHub data</strong> — repository metadata, code files (source, structure, dependencies), and OAuth token scope.</li>
+      <li><strong>Usage data</strong> — feature interactions, AI chat queries, generated documents, security scans.</li>
+      <li><strong>Analytics</strong> — page views and interactions via Google Analytics. You can opt out via the cookie banner.</li>
+    </ul>
+
+    <h2>2. How We Use Your Data</h2>
+    <p>We use your data solely to provide and improve Lumora's services:</p>
+    <ul>
+      <li>Analyze your codebase to generate documentation, architecture diagrams, and health scores.</li>
+      <li>Power AI chat responses based on your repository content.</li>
+      <li>Detect secrets and security issues in your code.</li>
+      <li>Send service-related emails (verification, password reset, security alerts).</li>
+      <li>Improve the product through anonymous usage analytics.</li>
+    </ul>
+
+    <h2>3. Data Sharing</h2>
+    <p>We do <strong>not</strong> sell your data. We share data only with trusted third-party services necessary for operation:</p>
+    <ul>
+      <li><strong>Groq</strong> — AI inference (code snippets sent for analysis, not stored).</li>
+      <li><strong>Resend</strong> — email delivery.</li>
+      <li><strong>MongoDB Atlas</strong> — database hosting.</li>
+      <li><strong>Google Analytics</strong> — anonymous usage tracking (opt-out available).</li>
+      <li><strong>Ko-fi</strong> — payment processing (no payment data stored by Lumora).</li>
+    </ul>
+
+    <h2>4. Data Retention</h2>
+    <p>We retain your data for as long as your account is active. If you delete your account, all associated data is permanently removed within 30 days. Shared reports are automatically deleted after 7 days.</p>
+
+    <h2>5. Your Rights (GDPR)</h2>
+    <p>If you are in the European Economic Area, you have the following rights:</p>
+    <ul>
+      <li><strong>Right to access</strong> — download all your data via <a href="/lumora/dashboard.html?page=settings">Settings → Export My Data</a>.</li>
+      <li><strong>Right to rectification</strong> — update your profile information in Settings.</li>
+      <li><strong>Right to erasure</strong> — delete your account and all data via <a href="/lumora/dashboard.html?page=settings">Settings → Delete Account</a>.</li>
+      <li><strong>Right to restrict processing</strong> — contact us to restrict how your data is processed.</li>
+      <li><strong>Right to data portability</strong> — your data export is in standard JSON format.</li>
+      <li><strong>Right to object</strong> — opt out of Google Analytics via the cookie banner.</li>
+    </ul>
+
+    <h2>6. Cookies</h2>
+    <p>We use a minimal set of cookies:</p>
+    <ul>
+      <li><strong>Authentication</strong> — JWT and refresh tokens stored in localStorage (not cookies).</li>
+      <li><strong>Analytics</strong> — Google Analytics cookies for page view tracking. You can accept or decline via the cookie banner.</li>
+      <li><strong>Preferences</strong> — theme preference and cookie consent status stored in localStorage.</li>
+    </ul>
+
+    <h2>7. Security</h2>
+    <p>We encrypt sensitive data (passwords, GitHub tokens) at rest using AES-256 and bcrypt. All traffic is served over HTTPS. We perform regular security scans on your repositories to detect exposed secrets.</p>
+
+    <h2>8. Contact</h2>
+    <p>For privacy-related inquiries, email <a href="mailto:privacy@lumora.app">privacy@lumora.app</a>.</p>
+  </div>
+
+  <div class="cookie-consent" id="cookieConsent">
+    <p>We use cookies to improve your experience. <a href="/lumora/privacy.html">Learn more</a></p>
+    <div class="cookie-buttons">
+      <button class="btn btn-ghost" id="cookieDecline">Decline</button>
+      <button class="btn btn-primary" id="cookieAccept">Accept</button>
+    </div>
+  </div>
+  <script src="/lumora/js/cookie-consent.js"></script>
+</body>
+</html>

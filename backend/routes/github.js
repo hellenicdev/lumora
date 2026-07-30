@@ -9,6 +9,7 @@ router.get('/connect', authenticate, githubController.connect);
 router.get('/callback', githubController.callback);
 router.get('/repositories', authenticate, githubController.getRepositories);
 router.post('/disconnect', authenticate, githubController.disconnect);
+router.post('/pat', authenticate, githubController.connectWithPat);
 router.get('/status', authenticate, githubController.status);
 
 export default router;

@@ -32,6 +32,9 @@
       <a href="/lumora/chat.html" class="nav-item">AI Chat</a>
       <a href="/lumora/health.html" class="nav-item">Health</a>
       <a href="/lumora/team.html" class="nav-item">Team</a>
+      <div class="nav-section-label">Organization</div>
+      <a href="/lumora/audit.html" class="nav-item">Audit Log</a>
+      <a href="/lumora/integrations.html" class="nav-item">Integrations</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user" id="userMenuTrigger">
@@ -110,6 +113,7 @@
           <button class="tab" data-tab="routes">Routes</button>
           <button class="tab" data-tab="dependencies">Dependencies</button>
           <button class="tab" data-tab="graph">Architecture</button>
+          <button class="tab" data-tab="cicd">CI/CD</button>
         </div>
 
         <div id="tab-overview" class="tab-content"></div>
@@ -140,6 +144,21 @@
             <p style="color:var(--text-muted)">Loading graph data...</p>
           </div>
         </div>
+        <div id="tab-cicd" class="tab-content" style="display:none">
+          <div class="card" style="padding:2rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+              <div>
+                <h2 style="font-size:1.3rem;font-weight:600;margin-bottom:0.25rem">CI/CD Integration</h2>
+                <p style="color:var(--text-secondary);font-size:0.9rem">Auto-trigger analysis on every push to your GitHub repository.</p>
+              </div>
+              <button class="btn btn-primary" id="setupWebhookBtn" style="display:none">Enable Webhook</button>
+              <button class="btn btn-secondary" id="disableWebhookBtn" style="display:none">Disable</button>
+            </div>
+            <div id="webhookStatus">
+              <p style="color:var(--text-muted);text-align:center;padding:2rem 0">Loading webhook status...</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -149,5 +168,13 @@
   <script src="/lumora/js/api.js"></script>
   <script src="/lumora/js/dashboard.js"></script>
   <script src="/lumora/js/repository-detail.js"></script>
+<div class="cookie-consent" id="cookieConsent">
+  <p>We use cookies to improve your experience. <a href="/lumora/privacy.html">Learn more</a></p>
+  <div class="cookie-buttons">
+    <button class="btn btn-ghost" id="cookieDecline">Decline</button>
+    <button class="btn btn-primary" id="cookieAccept">Accept</button>
+  </div>
+</div>
+<script src="/lumora/js/cookie-consent.js"></script>
 </body>
 </html>

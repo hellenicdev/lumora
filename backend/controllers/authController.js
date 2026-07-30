@@ -4,6 +4,20 @@ import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
 import config from '../config/index.js';
 import User from '../models/User.js';
+import AuditLog from '../models/AuditLog.js';
+import Integration from '../models/Integration.js';
+import WebhookConfig from '../models/WebhookConfig.js';
+import ShareableReport from '../models/ShareableReport.js';
+import UsageRecord from '../models/UsageRecord.js';
+import AnalysisJob from '../models/AnalysisJob.js';
+import RefreshToken from '../models/RefreshToken.js';
+import ChatSession from '../models/ChatSession.js';
+import Settings from '../models/Settings.js';
+import ApiKey from '../models/ApiKey.js';
+import Notification from '../models/Notification.js';
+import Organization from '../models/Organization.js';
+import Repository from '../models/Repository.js';
+import SecurityIncident from '../models/SecurityIncident.js';
 import { getUsage, PLAN_LIMITS } from '../services/usageService.js';
 import { getPlan } from '../middlewares/usage.js';
 
@@ -236,5 +250,122 @@ export async function activatePlan(req, res) {
   } catch (err) {
     logger.error('Plan activation failed', { error: err.message });
     return error(res, 'Activation failed', 500);
+  }
+}
+
+export async function exportData(req, res) {
+  try {
+    const userId = req.user._id;
+    const user = req.user;
+
+    const [
+      repositories,
+      integrations,
+      auditLogs,
+      webhooks,
+      reports,
+      usageRecords,
+      analysisJobs,
+      refreshTokens,
+      chatSessions,
+      settings,
+      apiKeys,
+      notifications,
+      securityIncidents,
+      organizationsOwned,
+      organizationsMember,
+    ] = await Promise.all([
+      Repository.find({ userId }).lean(),
+      Integration.find({ userId }).lean(),
+      AuditLog.find({ userId }).lean(),
+      WebhookConfig.find({ userId }).lean(),
+      ShareableReport.find({ userId }).lean(),
+      UsageRecord.find({ userId }).lean(),
+      AnalysisJob.find({ userId }).lean(),
+      RefreshToken.find({ userId }).lean(),
+      Settings.findOne({ userId }).lean(),
+      ApiKey.find({ userId }).lean(),
+      Notification.find({ userId }).lean(),
+      SecurityIncident.find({ resolvedBy: userId }).lean(),
+      Organization.find({ ownerId: userId }).lean(),
+      Organization.find({ 'members.userId': userId }).lean(),
+    ]);
+
+    const data = {
+      account: user.toSafeObject(),
+      repositories,
+      integrations,
+      auditLogs,
+      webhooks,
+      shareableReports: reports,
+      usageRecords,
+      analysisJobs,
+      refreshTokens,
+      chatSessions,
+      settings,
+      apiKeys,
+      notifications,
+      securityIncidents,
+      organizations: {
+        owned: organizationsOwned,
+        memberOf: organizationsMember,
+      },
+      exportedAt: new Date().toISOString(),
+    };
+
+    logger.info('Data exported', { userId });
+    return success(res, data, 'Data exported successfully');
+  } catch (err) {
+    logger.error('Data export failed', { error: err.message });
+    return error(res, 'Failed to export data', 500);
+  }
+}
+
+export async function deleteAccount(req, res) {
+  try {
+    const userId = req.user._id;
+
+    const userObjectId = userId;
+
+    const repoIds = await Repository.find({ userId: userObjectId }).distinct('_id');
+
+    await Promise.all([
+      Repository.deleteMany({ userId: userObjectId }),
+      Integration.deleteMany({ userId: userObjectId }),
+      AuditLog.deleteMany({ userId: userObjectId }),
+      WebhookConfig.deleteMany({ userId: userObjectId }),
+      ShareableReport.deleteMany({ userId: userObjectId }),
+      UsageRecord.deleteMany({ userId: userObjectId }),
+      AnalysisJob.deleteMany({ userId: userObjectId }),
+      RefreshToken.deleteMany({ userId: userObjectId }),
+      ChatSession.deleteMany({ userId: userObjectId }),
+      Settings.deleteMany({ userId: userObjectId }),
+      ApiKey.deleteMany({ userId: userObjectId }),
+      Notification.deleteMany({ userId: userObjectId }),
+      SecurityIncident.updateMany({ resolvedBy: userObjectId }, { $set: { resolvedBy: null } }),
+      Organization.updateMany({ ownerId: userObjectId }, { $set: { ownerId: null } }),
+      Organization.updateMany(
+        { 'members.userId': userObjectId },
+        { $pull: { members: { userId: userObjectId } } },
+      ),
+      Organization.updateMany(
+        { 'pendingInvitations.invitedBy': userObjectId },
+        { $pull: { pendingInvitations: { invitedBy: userObjectId } } },
+      ),
+      User.deleteOne({ _id: userObjectId }),
+    ]);
+
+    if (repoIds.length > 0) {
+      try {
+        const { deleteRepoData } = await import('../services/repositoryService.js');
+        await Promise.all(repoIds.map(id => deleteRepoData(id).catch(() => {})));
+      } catch {}
+    }
+
+    logger.info('Account deleted', { userId });
+    return success(res, null, 'Account and all associated data deleted permanently');
+  } catch (err) {
+    logger.error('Account deletion failed', { error: err.message });
+    return error(res, 'Failed to delete account', 500);
   }
 }

@@ -3,7 +3,7 @@ import config from '../config/index.js';
 import User from '../models/User.js';
 import * as githubOAuth from '../github/oauth.js';
 import * as authService from '../services/authService.js';
-import { storeGitHubToken } from '../github/client.js';
+import { storeGitHubToken, storeGitHubPat, validatePat } from '../github/client.js';
 import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
 
@@ -135,14 +135,37 @@ export async function getRepositories(req, res) {
 export async function disconnect(req, res) {
   try {
     await User.findByIdAndUpdate(req.user._id, {
-      githubAccessToken: undefined,
+      githubAccessToken: null,
+      githubPat: null,
       githubConnected: false,
-      githubId: undefined,
-      githubUsername: undefined,
+      githubId: null,
+      githubUsername: null,
     });
     return success(res, null, 'GitHub disconnected');
   } catch (err) {
     return error(res, 'Failed to disconnect GitHub', 500);
+  }
+}
+
+export async function connectWithPat(req, res) {
+  try {
+    const { token } = req.body;
+    if (!token) return error(res, 'Token is required', 400);
+
+    const result = await validatePat(token);
+    await storeGitHubPat(req.user._id, token);
+
+    await User.findByIdAndUpdate(req.user._id, {
+      githubId: String(result.user.id),
+      githubUsername: result.user.login,
+      avatar: result.user.avatar || null,
+    });
+
+    logger.info('GitHub connected via PAT', { userId: req.user._id, username: result.user.login });
+    return success(res, result, 'GitHub connected via personal access token');
+  } catch (err) {
+    logger.error('PAT connection failed', { userId: req.user._id, error: err.message });
+    return error(res, 'Invalid token: ' + err.message, 400);
   }
 }
 

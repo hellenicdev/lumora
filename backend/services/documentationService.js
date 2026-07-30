@@ -310,6 +310,16 @@ function notifyUser(userId, type, title, message) {
   try {
     const io = getIO();
     io.to(`user:${userId}`).emit('notification.new', { type, title, message });
+
+    if (type === 'success' && (title.includes('generated') || title.includes('created'))) {
+      import('./integrationService.js').then(({ notifyIntegrations }) => {
+        notifyIntegrations(userId, 'doc_generated', {
+          type: 'doc_generated',
+          title: '📄 ' + title,
+          message,
+        });
+      }).catch(() => {});
+    }
   } catch {}
 }
 

@@ -25,6 +25,18 @@
       githubConnect.addEventListener('click', connectGitHub);
     }
 
+    var patBtn = document.getElementById('patConnectBtn');
+    if (patBtn) {
+      patBtn.addEventListener('click', connectWithPat);
+    }
+
+    var patInput = document.getElementById('patInput');
+    if (patInput) {
+      patInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') connectWithPat();
+      });
+    }
+
     checkGitHubStatus();
   });
 
@@ -166,6 +178,41 @@
       var repoSection = document.getElementById('repoSection');
       if (connectCard) connectCard.style.display = 'block';
       if (repoSection) repoSection.style.display = 'none';
+    }
+  }
+
+  async function connectWithPat() {
+    var input = document.getElementById('patInput');
+    var error = document.getElementById('patError');
+    var btn = document.getElementById('patConnectBtn');
+    if (!input || !input.value.trim()) return;
+
+    var token = input.value.trim();
+    btn.disabled = true;
+    btn.textContent = 'Validating...';
+    if (error) error.style.display = 'none';
+
+    try {
+      var data = await apiRequest('/github/pat', {
+        method: 'POST',
+        body: { token: token },
+      });
+
+      showToast('Connected as ' + (data.data.user.login || '') + '. ' + data.data.repositories.length + ' repositories available.', 'success');
+      var connectCard = document.getElementById('githubConnectCard');
+      var repoSection = document.getElementById('repoSection');
+      if (connectCard) connectCard.style.display = 'none';
+      if (repoSection) repoSection.style.display = 'block';
+      loadRepositories();
+    } catch (err) {
+      if (error) {
+        error.textContent = err.message;
+        error.style.display = 'block';
+      }
+      showToast('Connection failed: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Connect';
     }
   }
 

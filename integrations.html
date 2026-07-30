@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations — Lumora</title>
+  <meta name="description" content="Configure third-party integrations for Lumora notifications.">
+  <meta property="og:title" content="Integrations — Lumora">
+  <meta property="og:description" content="Configure third-party integrations for Lumora notifications.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hellenicdev.github.io/lumora/integrations.html">
+  <base href="/lumora/">
+  <link rel="icon" type="image/svg+xml" href="/lumora/favicon.svg">
+  <link rel="alternate icon" href="/lumora/favicon.ico">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9FWQFZME3Z"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9FWQFZME3Z');</script>
+  <style>
+    .integration-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .integration-card .info { flex: 1; }
+    .integration-card .info h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .integration-card .info p { font-size: 0.85rem; color: var(--text-secondary); }
+    .integration-card .info .events { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+    .integration-card .info .events span { font-size: 0.7rem; background: var(--bg-subtle); padding: 0.15rem 0.5rem; border-radius: 4px; color: var(--text-secondary); }
+    .integration-card .actions { display: flex; gap: 0.5rem; align-items: center; }
+    .integration-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .integration-modal { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .integration-modal h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1.25rem; }
+    .integration-modal .form-group { margin-bottom: 1rem; }
+    .integration-modal .form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.35rem; color: var(--text-secondary); }
+    .integration-modal .form-group .input, .integration-modal .form-group select { width: 100%; }
+    .integration-modal .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; }
+    .integrations-empty { text-align: center; padding: 4rem 0; }
+    .integrations-empty svg { opacity: 0.4; margin-bottom: 1rem; }
+    .integrations-empty h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .integrations-empty p { color: var(--text-secondary); font-size: 0.9rem; max-width: 400px; margin: 0 auto 1.5rem; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="/lumora/" class="logo">Lumora</a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Main</div>
+        <a href="/lumora/dashboard.html" class="nav-item">Dashboard</a>
+        <a href="/lumora/repositories.html" class="nav-item">Repositories</a>
+        <a href="/lumora/documentation.html" class="nav-item">Documentation</a>
+        <a href="/lumora/chat.html" class="nav-item">AI Chat</a>
+        <a href="/lumora/health.html" class="nav-item">Health</a>
+        <a href="/lumora/team.html" class="nav-item">Team</a>
+        <div class="nav-section-label">Organization</div>
+        <a href="/lumora/audit.html" class="nav-item">Audit Log</a>
+        <a href="/lumora/integrations.html" class="nav-item active">Integrations</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>Integrations</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="themeToggle" class="icon-btn theme-btn" aria-label="Toggle theme">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path class="sun" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              <path class="moon" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+          </button>
+          <div class="user-menu" id="userMenu">
+            <button class="user-avatar" id="userMenuBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+              <div class="dropdown-header">
+                <div class="dropdown-user-name" id="dropdownUserName">User</div>
+                <div class="dropdown-user-email" id="dropdownUserEmail"></div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a href="/lumora/dashboard.html" class="dropdown-item" data-action="dashboard">Dashboard</a>
+              <a href="/lumora/upgrade.html" class="dropdown-item" data-action="plans">Plans</a>
+              <div class="dropdown-item" data-action="settings">Settings</div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-item" data-action="logout" style="color:var(--error)">Sign out</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div id="pageContent">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+            <div>
+              <h2 style="font-size:1.1rem;font-weight:600">Connected Integrations</h2>
+              <p style="color:var(--text-secondary);font-size:0.85rem">Receive notifications in Slack, webhooks, and more.</p>
+            </div>
+            <button class="btn btn-primary" id="addIntegrationBtn">Add Integration</button>
+          </div>
+          <div id="integrationsList">
+            <p style="text-align:center;padding:3rem 0;color:var(--text-muted)">Loading integrations...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="integrationModal" style="display:none"></div>
+
+  <script src="/lumora/js/theme.js"></script>
+  <script src="/lumora/js/config.js"></script>
+  <script src="/lumora/js/api.js"></script>
+  <script src="/lumora/js/dashboard.js"></script>
+  <script src="/lumora/js/integrations.js"></script>
+<div class="cookie-consent" id="cookieConsent">
+  <p>We use cookies to improve your experience. <a href="/lumora/privacy.html">Learn more</a></p>
+  <div class="cookie-buttons">
+    <button class="btn btn-ghost" id="cookieDecline">Decline</button>
+    <button class="btn btn-primary" id="cookieAccept">Accept</button>
+  </div>
+</div>
+<script src="/lumora/js/cookie-consent.js"></script>
+</body>
+</html>

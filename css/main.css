@@ -240,6 +240,33 @@ a:hover {
   border-radius: var(--radius-sm);
 }
 
+.cookie-consent {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 1.5rem;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+}
+.cookie-consent.visible { display: flex; }
+.cookie-consent p { font-size: 0.85rem; margin: 0; color: var(--text-secondary); line-height: 1.5; }
+.cookie-consent a { color: var(--accent-primary); text-decoration: underline; }
+.cookie-consent .cookie-buttons { display: flex; gap: 0.5rem; flex-shrink: 0; }
+@media (max-width: 600px) {
+  .cookie-consent { flex-direction: column; text-align: center; padding: 0.75rem 1rem; }
+  .cookie-consent .cookie-buttons { width: 100%; }
+  .cookie-consent .cookie-buttons .btn { flex: 1; }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 16px;

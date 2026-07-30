@@ -11,6 +11,16 @@
     loadUser();
     loadDashboardStats();
     connectSocket();
+
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('page') === 'settings') {
+      var checkLoaded = setInterval(function () {
+        if (currentUser) {
+          clearInterval(checkLoaded);
+          showPage('settings');
+        }
+      }, 100);
+    }
   });
 
   function initSidebar() {
@@ -78,7 +88,11 @@
       if (action === 'logout') {
         handleLogout();
       } else if (action === 'settings') {
-        showPage('settings');
+        if (document.getElementById('pageContent')) {
+          showPage('settings');
+        } else {
+          window.location.href = '/lumora/dashboard.html?page=settings';
+        }
       }
     });
   }
@@ -282,6 +296,16 @@
       '    </form>',
       '  </div>',
 
+      '  <div class="card">',
+      '    <h3 style="margin-bottom:16px">Privacy & Data</h3>',
+      '    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:12px">Manage your data and privacy settings in accordance with GDPR.</p>',
+      '    <div style="display:flex;flex-direction:column;gap:8px">',
+      '      <button class="btn btn-secondary" id="exportDataBtn" style="justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export My Data</button>',
+      '      <button class="btn btn-danger" id="deleteAccountBtn" style="justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Delete Account</button>',
+      '    </div>',
+      '    <div id="gdprMsg" style="margin-top:12px;font-size:14px"></div>',
+      '  </div>',
+
       '</div>',
     ].join('\n');
 
@@ -291,6 +315,7 @@
     loadUsage();
     initActivation();
     initPasswordForm();
+    initGDPR();
   }
 
   async function loadUsage() {
@@ -374,6 +399,60 @@
         btn.textContent = 'Activate';
       }
     });
+  }
+
+  function initGDPR() {
+    var exportBtn = document.getElementById('exportDataBtn');
+    var deleteBtn = document.getElementById('deleteAccountBtn');
+    var msg = document.getElementById('gdprMsg');
+
+    if (exportBtn) {
+      exportBtn.addEventListener('click', async function () {
+        exportBtn.disabled = true;
+        exportBtn.textContent = 'Exporting...';
+        if (msg) msg.innerHTML = '';
+        try {
+          var data = await apiRequest('/auth/export-data');
+          var blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'lumora-data-export.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          if (msg) msg.innerHTML = '<span style="color:var(--success)">Data exported. Check your downloads.</span>';
+        } catch (err) {
+          if (msg) msg.innerHTML = '<span style="color:var(--error)">' + (err.message || 'Export failed') + '</span>';
+        } finally {
+          exportBtn.disabled = false;
+          exportBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export My Data';
+        }
+      });
+    }
+
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', function () {
+        if (!confirm('Are you sure you want to permanently delete your account and all associated data? This cannot be undone.')) return;
+        if (!confirm('This will delete all repositories, documentation, integrations, and team data. Type DELETE to confirm.')) return;
+
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = 'Deleting...';
+        if (msg) msg.innerHTML = '';
+
+        apiRequest('/auth/delete-account', { method: 'DELETE' })
+          .then(function () {
+            clearTokens();
+            window.location.href = '/lumora/';
+          })
+          .catch(function (err) {
+            if (msg) msg.innerHTML = '<span style="color:var(--error)">' + (err.message || 'Deletion failed') + '</span>';
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Delete Account';
+          });
+      });
+    }
   }
 
   function initPasswordForm() {
