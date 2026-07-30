@@ -8,6 +8,10 @@
     if (addBtn) addBtn.addEventListener('click', showAddModal);
   });
 
+  document.addEventListener('click', function (e) {
+    if (e.target.id === 'emptyAddBtn') showAddModal();
+  });
+
   async function loadIntegrations() {
     var container = getEl('integrationsList');
     if (!container) return;
@@ -34,7 +38,7 @@
           '</svg>' +
           '<h3>No integrations configured</h3>' +
           '<p>Connect Slack or a webhook URL to receive real-time notifications for security alerts, documentation updates, and more.</p>' +
-          '<button class="btn btn-primary" onclick="' + 'showAddModal()' + '">Add your first integration</button>' +
+          '<button class="btn btn-primary" id="emptyAddBtn">Add your first integration</button>' +
         '</div>';
       return;
     }
@@ -78,7 +82,10 @@
     modalContainer.innerHTML =
       '<div class="integration-modal-overlay" id="modalOverlay">' +
         '<div class="integration-modal">' +
-          '<h2>Add Integration</h2>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">' +
+            '<h2 style="margin:0;font-size:1.2rem;font-weight:600">Add Integration</h2>' +
+            '<button class="btn btn-ghost" id="closeModalX" style="padding:4px 8px;font-size:1.2rem;line-height:1">&times;</button>' +
+          '</div>' +
           '<div class="form-group">' +
             '<label>Type</label>' +
             '<select id="integrationType" class="input">' +
@@ -101,10 +108,10 @@
           '<div class="form-group">' +
             '<label>Events</label>' +
             '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.35rem">' +
-              '<label style="display:flex;align-items:center;gap:0.35rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="security_alert" checked> Security alerts</label>' +
-              '<label style="display:flex;align-items:center;gap:0.35rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="doc_generated"> Doc generated</label>' +
-              '<label style="display:flex;align-items:center;gap:0.35rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="scan_completed"> Scan completed</label>' +
-              '<label style="display:flex;align-items:center;gap:0.35rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="import_completed"> Import completed</label>' +
+              '<label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="security_alert" checked style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Security alerts</label>' +
+              '<label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="doc_generated" style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Doc generated</label>' +
+              '<label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="scan_completed" style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Scan completed</label>' +
+              '<label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="import_completed" style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Import completed</label>' +
             '</div>' +
           '</div>' +
           '<div class="modal-actions">' +
@@ -117,6 +124,7 @@
     modalContainer.style.display = '';
 
     getEl('cancelIntegrationBtn').addEventListener('click', closeModal);
+    getEl('closeModalX').addEventListener('click', closeModal);
     getEl('modalOverlay').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
     getEl('saveIntegrationBtn').addEventListener('click', saveIntegration);
   }
@@ -127,8 +135,8 @@
     var url = getEl('integrationUrl').value.trim();
     var channel = getEl('integrationChannel').value.trim();
 
-    if (!name) { alert('Name is required'); return; }
-    if (!url) { alert('Webhook URL is required'); return; }
+    if (!name) { showToast('Name is required', 'error'); return; }
+    if (!url) { showToast('Webhook URL is required', 'error'); return; }
 
     var eventCheckboxes = document.querySelectorAll('#integrationModal input[type=checkbox]:checked');
     var events = Array.from(eventCheckboxes).map(function (cb) { return cb.value; });
@@ -146,8 +154,9 @@
       integrations.push(data.data.integration);
       closeModal();
       renderIntegrations();
+      showToast('Integration added successfully', 'success');
     } catch (err) {
-      alert('Failed to save: ' + err.message);
+      showToast('Failed to save: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
       btn.textContent = 'Save';
@@ -164,12 +173,12 @@
     try {
       const data = await apiRequest('/integrations/' + id + '/test', { method: 'POST' });
       if (data.data.success) {
-        alert('Test successful! Check your Slack/webhook.');
+        showToast('Test sent successfully!', 'success');
       } else {
-        alert('Test failed: ' + (data.data.message || 'Unknown error'));
+        showToast('Test failed: ' + (data.data.message || 'Unknown error'), 'error');
       }
     } catch (err) {
-      alert('Test error: ' + err.message);
+      showToast('Test error: ' + err.message, 'error');
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -185,8 +194,9 @@
       await apiRequest('/integrations/' + id, { method: 'DELETE' });
       integrations = integrations.filter(function (i) { return i._id !== id; });
       renderIntegrations();
+      showToast('Integration deleted', 'success');
     } catch (err) {
-      alert('Failed to delete: ' + err.message);
+      showToast('Failed to delete: ' + err.message, 'error');
     }
   }
 
