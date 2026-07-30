@@ -1,10 +1,14 @@
 import { Octokit } from 'octokit';
-import { encrypt, decrypt } from '../utils/encryption.js';
+import { encrypt, decrypt, isEncryptionAvailable } from '../utils/encryption.js';
 import User from '../models/User.js';
 
 function getToken(user) {
-  if (user.githubAccessToken) return decrypt(user.githubAccessToken);
-  if (user.githubPat) return decrypt(user.githubPat);
+  try {
+    if (user.githubAccessToken) return decrypt(user.githubAccessToken);
+    if (user.githubPat) return decrypt(user.githubPat);
+  } catch {
+    return null;
+  }
   return null;
 }
 
@@ -29,18 +33,18 @@ export async function getAccessTokenForUser(userId) {
 }
 
 export async function storeGitHubToken(userId, token) {
-  const encrypted = encrypt(token);
+  const stored = isEncryptionAvailable() ? encrypt(token) : token;
   await User.findByIdAndUpdate(userId, {
-    githubAccessToken: encrypted,
+    githubAccessToken: stored,
     githubPat: null,
     githubConnected: true,
   });
 }
 
 export async function storeGitHubPat(userId, token) {
-  const encrypted = encrypt(token);
+  const stored = isEncryptionAvailable() ? encrypt(token) : token;
   await User.findByIdAndUpdate(userId, {
-    githubPat: encrypted,
+    githubPat: stored,
     githubConnected: true,
   });
 }
