@@ -245,7 +245,7 @@
     var planLabel = currentUser ? capitalize(currentUser.role) : 'Free';
     var planBadgeClass = currentUser && currentUser.role === 'pro' ? 'badge-primary' : 'badge-warning';
 
-    content.innerHTML = [
+    var html = [
       '<div class="page-header">',
       '  <h1>Settings</h1>',
       '  <p>Manage your account, plan, and preferences.</p>',
@@ -307,7 +307,22 @@
       '  </div>',
 
       '</div>',
-    ].join('\n');
+    ];
+
+    if (currentUser && ['pro', 'team_admin', 'system_admin'].indexOf(currentUser.role) !== -1) {
+      html.push(
+        '  <div class="card" style="grid-column:1 / -1">',
+        '    <h3 style="margin-bottom:16px">API Keys</h3>',
+        '    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">Use keys to access the Lumora API programmatically. Available on Pro and Team plans.</p>',
+        '    <button class="btn btn-primary" id="generateApiKeyBtn">Generate API Key</button>',
+        '    <div id="apiKeysList" style="margin-top:16px;display:flex;flex-direction:column;gap:8px">',
+        '      <div class="skeleton" style="height:20px;width:100%"></div>',
+        '    </div>',
+        '  </div>'
+      );
+    }
+
+    content.innerHTML = html.join('\n');
 
     document.getElementById('settingsName').textContent = currentUser ? currentUser.name || currentUser.email : '';
     document.getElementById('settingsEmail').textContent = currentUser ? currentUser.email : '';
@@ -316,6 +331,7 @@
     initActivation();
     initPasswordForm();
     initGDPR();
+    initApiKeys();
   }
 
   async function loadUsage() {
@@ -621,5 +637,219 @@
 
     clearTokens();
     window.location.href = '/lumora/login.html';
+  }
+
+  function initApiKeys() {
+    var btn = document.getElementById('generateApiKeyBtn');
+    if (btn) btn.addEventListener('click', showApiKeyModal);
+    loadApiKeys();
+  }
+
+  async function loadApiKeys() {
+    var container = document.getElementById('apiKeysList');
+    if (!container) return;
+
+    try {
+      var data = await apiRequest('/api-keys');
+      renderApiKeys(data.data.apiKeys || []);
+    } catch (err) {
+      container.innerHTML = '<p style="color:var(--error);font-size:14px">Failed to load API keys: ' + escHtml(err.message) + '</p>';
+    }
+  }
+
+  function renderApiKeys(keys) {
+    var container = document.getElementById('apiKeysList');
+    if (!container) return;
+
+    if (keys.length === 0) {
+      container.innerHTML = '<p style="color:var(--text-secondary);font-size:14px">No API keys yet. Generate one to access the Lumora API.</p>';
+      return;
+    }
+
+    container.innerHTML = keys.map(function (key) {
+      var perms = (key.permissions || []).map(function (p) {
+        return '<span style="font-size:0.7rem;background:var(--bg-subtle);padding:0.15rem 0.5rem;border-radius:4px;color:var(--text-secondary)">' + escHtml(p) + '</span>';
+      }).join(' ');
+      return [
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:12px 14px;border:1px solid var(--border);border-radius:10px;flex-wrap:wrap">',
+        '  <div style="flex:1;min-width:0">',
+        '    <div style="font-size:14px;font-weight:500">' + escHtml(key.name) + '</div>',
+        '    <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">lum_•••••••• · Created ' + formatDate(key.createdAt) + ' · Last used ' + (key.lastUsed ? formatDate(key.lastUsed) : 'Never') + '</div>',
+        '    <div style="display:flex;gap:0.35rem;margin-top:6px;flex-wrap:wrap">' + perms + '</div>',
+        '  </div>',
+        '  <div style="display:flex;gap:0.5rem;align-items:center">',
+        '    <button class="btn btn-ghost" data-rename-key="' + key._id + '" style="font-size:0.85rem;padding:0.3rem 0.7rem">Rename</button>',
+        '    <button class="btn btn-ghost" data-revoke-key="' + key._id + '" style="font-size:0.85rem;padding:0.3rem 0.7rem;color:var(--color-danger)">Revoke</button>',
+        '  </div>',
+        '</div>',
+      ].join('\n');
+    }).join('\n');
+
+    container.querySelectorAll('[data-rename-key]').forEach(function (btn) {
+      btn.addEventListener('click', function () { renameApiKey(btn.dataset.renameKey); });
+    });
+    container.querySelectorAll('[data-revoke-key]').forEach(function (btn) {
+      btn.addEventListener('click', function () { revokeApiKey(btn.dataset.revokeKey); });
+    });
+  }
+
+  function showApiKeyModal() {
+    var existing = document.getElementById('apiKeyModalOverlay');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'apiKeyModalOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem';
+    overlay.innerHTML = [
+      '<div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:2rem;max-width:480px;width:100%;max-height:90vh;overflow-y:auto">',
+      '  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">',
+      '    <h3 style="margin:0;font-size:1.2rem;font-weight:600">Generate API Key</h3>',
+      '    <button class="btn btn-ghost" id="apiKeyModalClose" style="padding:4px 8px;font-size:1.2rem;line-height:1">&times;</button>',
+      '  </div>',
+      '  <div style="margin-bottom:1rem">',
+      '    <label style="display:block;font-size:0.85rem;font-weight:500;margin-bottom:0.35rem;color:var(--text-secondary)">Name</label>',
+      '    <input type="text" id="apiKeyName" class="input" placeholder="My key" maxlength="100">',
+      '  </div>',
+      '  <div style="margin-bottom:1rem">',
+      '    <label style="display:block;font-size:0.85rem;font-weight:500;margin-bottom:0.35rem;color:var(--text-secondary)">Permissions</label>',
+      '    <div style="display:flex;flex-direction:column;gap:0.5rem">',
+      '      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="repositories:read" checked style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Read repositories</label>',
+      '      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="reports:read" checked style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Read reports</label>',
+      '    </div>',
+      '  </div>',
+      '  <div style="display:flex;gap:0.75rem;margin-top:1.5rem;justify-content:flex-end">',
+      '    <button class="btn btn-secondary" id="apiKeyModalCancel">Cancel</button>',
+      '    <button class="btn btn-primary" id="apiKeyModalGenerate">Generate</button>',
+      '  </div>',
+      '</div>',
+    ].join('\n');
+    document.body.appendChild(overlay);
+
+    function close() { overlay.remove(); }
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    document.getElementById('apiKeyModalClose').addEventListener('click', close);
+    document.getElementById('apiKeyModalCancel').addEventListener('click', close);
+
+    document.getElementById('apiKeyModalGenerate').addEventListener('click', async function () {
+      var btn = this;
+      var nameInput = document.getElementById('apiKeyName');
+      var checkboxes = document.querySelectorAll('#apiKeyModalOverlay input[type=checkbox]:checked');
+      var permissions = Array.from(checkboxes).map(function (cb) { return cb.value; });
+
+      if (permissions.length === 0) {
+        showToast('Select at least one permission', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      try {
+        var data = await apiRequest('/api-keys', {
+          method: 'POST',
+          body: { name: nameInput.value.trim(), permissions: permissions },
+        });
+        showApiKeyReveal(data.data.key);
+        loadApiKeys();
+        showToast(data.message || 'API key generated', 'success');
+      } catch (err) {
+        showToast('Failed to generate key: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Generate';
+      }
+    });
+  }
+
+  function showApiKeyReveal(key) {
+    var overlay = document.getElementById('apiKeyModalOverlay');
+    if (!overlay) return;
+
+    overlay.innerHTML = [
+      '<div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:2rem;max-width:480px;width:100%">',
+      '  <h3 style="margin:0 0 0.5rem;font-size:1.2rem;font-weight:600">Your API Key</h3>',
+      '  <p style="color:var(--text-secondary);font-size:14px;margin-bottom:1rem">Copy this key now. For security reasons it will not be shown again.</p>',
+      '  <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">',
+      '    <input type="text" id="apiKeyRevealed" class="input" value="' + escHtml(key) + '" readonly style="flex:1;font-family:monospace;font-size:13px">',
+      '    <button class="btn btn-primary" id="apiKeyCopyBtn">Copy</button>',
+      '  </div>',
+      '  <div style="display:flex;justify-content:flex-end;margin-top:1rem">',
+      '    <button class="btn btn-secondary" id="apiKeyRevealDone">Done</button>',
+      '  </div>',
+      '</div>',
+    ].join('\n');
+
+    document.getElementById('apiKeyCopyBtn').addEventListener('click', function () {
+      var input = document.getElementById('apiKeyRevealed');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      var copied = false;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).then(function () {
+          showToast('API key copied', 'success');
+        }).catch(function () {
+          try {
+            copied = document.execCommand('copy');
+          } catch {}
+          showToast(copied ? 'API key copied' : 'Failed to copy. Select the key manually.', copied ? 'success' : 'error');
+        });
+      } else {
+        try {
+          copied = document.execCommand('copy');
+        } catch {}
+        showToast(copied ? 'API key copied' : 'Failed to copy. Select the key manually.', copied ? 'success' : 'error');
+      }
+    });
+    document.getElementById('apiKeyRevealDone').addEventListener('click', function () {
+      overlay.remove();
+    });
+  }
+
+  async function renameApiKey(id) {
+    var newName = prompt('Enter a new name for this API key:');
+    if (newName === null) return;
+    newName = newName.trim();
+    if (!newName) {
+      showToast('Name cannot be empty', 'error');
+      return;
+    }
+
+    try {
+      await apiRequest('/api-keys/' + id, {
+        method: 'PATCH',
+        body: { name: newName },
+      });
+      loadApiKeys();
+      showToast('API key renamed', 'success');
+    } catch (err) {
+      showToast('Failed to rename: ' + err.message, 'error');
+    }
+  }
+
+  async function revokeApiKey(id) {
+    if (!confirm('Revoke this API key? Any application using it will immediately lose access.')) return;
+
+    try {
+      await apiRequest('/api-keys/' + id, { method: 'DELETE' });
+      loadApiKeys();
+      showToast('API key revoked', 'success');
+    } catch (err) {
+      showToast('Failed to revoke: ' + err.message, 'error');
+    }
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleDateString();
+    } catch {
+      return '—';
+    }
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
   }
 })();

@@ -11,6 +11,8 @@ import auditRoutes from './audit.js';
 import integrationRoutes from './integrations.js';
 import organizationRoutes from './organizations.js';
 import billingRoutes from './billing.js';
+import apiKeyRoutes from './apiKeys.js';
+import publicApiRoutes from './api.js';
 import config from '../config/index.js';
 
 const router = Router();
@@ -31,5 +33,7 @@ router.use('/integrations', integrationRoutes);
 router.use('/chat', chatRoutes);
 router.use('/organizations', organizationRoutes);
 router.use('/billing', billingRoutes);
+router.use('/api-keys', apiKeyRoutes);
+router.use('/v1', publicApiRoutes);
 
 export default router;

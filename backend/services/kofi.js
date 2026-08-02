@@ -25,6 +25,7 @@ export function getPlans() {
         '10,000 AI questions/month',
         '100 doc generations/month',
         '30 security scans/month',
+        'API access via API keys',
         'Priority support',
       ],
       popular: true,
@@ -39,6 +40,7 @@ export function getPlans() {
       features: [
         'Unlimited everything',
         'Up to 10 team members',
+        'API access via API keys',
         'Priority support',
         'Advanced security scans',
       ],
