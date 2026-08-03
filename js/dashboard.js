@@ -699,40 +699,66 @@
 
     var overlay = document.createElement('div');
     overlay.id = 'apiKeyModalOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem';
+    overlay.className = 'api-key-modal-overlay';
     overlay.innerHTML = [
-      '<div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:2rem;max-width:480px;width:100%;max-height:90vh;overflow-y:auto">',
-      '  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">',
-      '    <h3 style="margin:0;font-size:1.2rem;font-weight:600">Generate API Key</h3>',
-      '    <button class="btn btn-ghost" id="apiKeyModalClose" style="padding:4px 8px;font-size:1.2rem;line-height:1">&times;</button>',
+      '<div class="api-key-modal">',
+      '  <div class="api-key-modal-header">',
+      '    <div class="api-key-modal-icon">',
+      '      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
+      '    </div>',
+      '    <div>',
+      '      <h3>Generate API key</h3>',
+      '      <p>Allow external tools to access your Lumora data.</p>',
+      '    </div>',
+      '    <button class="api-key-close" id="apiKeyModalClose" aria-label="Close">&times;</button>',
       '  </div>',
-      '  <div style="margin-bottom:1rem">',
-      '    <label style="display:block;font-size:0.85rem;font-weight:500;margin-bottom:0.35rem;color:var(--text-secondary)">Name</label>',
-      '    <input type="text" id="apiKeyName" class="input" placeholder="My key" maxlength="100">',
-      '  </div>',
-      '  <div style="margin-bottom:1rem">',
-      '    <label style="display:block;font-size:0.85rem;font-weight:500;margin-bottom:0.35rem;color:var(--text-secondary)">Permissions</label>',
-      '    <div style="display:flex;flex-direction:column;gap:0.5rem">',
-      '      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="repositories:read" checked style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Read repositories</label>',
-      '      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" value="reports:read" checked style="width:16px;height:16px;accent-color:var(--accent-primary);cursor:pointer"> Read reports</label>',
+      '  <div class="api-key-modal-body">',
+      '    <div class="api-key-field">',
+      '      <label for="apiKeyName">Key name</label>',
+      '      <input type="text" id="apiKeyName" class="input" placeholder="e.g. CI pipeline" maxlength="100">',
+      '    </div>',
+      '    <div class="api-key-field">',
+      '      <label>Permissions</label>',
+      '      <div class="api-key-perms">',
+      '        <label class="api-key-perm checked"><input type="checkbox" value="repositories:read" checked><div><div class="api-key-perm-name">Repositories</div><div class="api-key-perm-desc">Read your repositories</div></div></label>',
+      '        <label class="api-key-perm checked"><input type="checkbox" value="reports:read" checked><div><div class="api-key-perm-name">Reports</div><div class="api-key-perm-desc">Generate and read reports</div></div></label>',
+      '      </div>',
       '    </div>',
       '  </div>',
-      '  <div style="display:flex;gap:0.75rem;margin-top:1.5rem;justify-content:flex-end">',
+      '  <div class="api-key-modal-footer">',
       '    <button class="btn btn-secondary" id="apiKeyModalCancel">Cancel</button>',
-      '    <button class="btn btn-primary" id="apiKeyModalGenerate">Generate</button>',
+      '    <button class="btn btn-primary" id="apiKeyModalGenerate">Generate key</button>',
       '  </div>',
       '</div>',
     ].join('\n');
     document.body.appendChild(overlay);
 
-    function close() { overlay.remove(); }
+    function close() {
+      overlay.remove();
+      document.removeEventListener('keydown', onKey);
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') close();
+    }
     overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', onKey);
     document.getElementById('apiKeyModalClose').addEventListener('click', close);
     document.getElementById('apiKeyModalCancel').addEventListener('click', close);
 
+    overlay.querySelectorAll('.api-key-perm input').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        cb.closest('.api-key-perm').classList.toggle('checked', cb.checked);
+      });
+    });
+
+    var nameInput = document.getElementById('apiKeyName');
+    nameInput.focus();
+    nameInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') document.getElementById('apiKeyModalGenerate').click();
+    });
+
     document.getElementById('apiKeyModalGenerate').addEventListener('click', async function () {
       var btn = this;
-      var nameInput = document.getElementById('apiKeyName');
       var checkboxes = document.querySelectorAll('#apiKeyModalOverlay input[type=checkbox]:checked');
       var permissions = Array.from(checkboxes).map(function (cb) { return cb.value; });
 
@@ -755,7 +781,7 @@
       } catch (err) {
         showToast('Failed to generate key: ' + err.message, 'error');
         btn.disabled = false;
-        btn.textContent = 'Generate';
+        btn.textContent = 'Generate key';
       }
     });
   }
@@ -764,17 +790,28 @@
     var overlay = document.getElementById('apiKeyModalOverlay');
     if (!overlay) return;
 
-    overlay.innerHTML = [
-      '<div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:2rem;max-width:480px;width:100%">',
-      '  <h3 style="margin:0 0 0.5rem;font-size:1.2rem;font-weight:600">Your API Key</h3>',
-      '  <p style="color:var(--text-secondary);font-size:14px;margin-bottom:1rem">Copy this key now. For security reasons it will not be shown again.</p>',
-      '  <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">',
-      '    <input type="text" id="apiKeyRevealed" class="input" value="' + escHtml(key) + '" readonly style="flex:1;font-family:monospace;font-size:13px">',
+    overlay.querySelector('.api-key-modal').innerHTML = [
+      '<div class="api-key-modal-header">',
+      '  <div class="api-key-modal-icon success">',
+      '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      '  </div>',
+      '  <div>',
+      '    <h3>Key created</h3>',
+      '    <p>Copy it now — it will not be shown again.</p>',
+      '  </div>',
+      '</div>',
+      '<div class="api-key-modal-body">',
+      '  <div class="api-key-reveal-key">',
+      '    <input type="text" id="apiKeyRevealed" class="input" value="' + escHtml(key) + '" readonly>',
       '    <button class="btn btn-primary" id="apiKeyCopyBtn">Copy</button>',
       '  </div>',
-      '  <div style="display:flex;justify-content:flex-end;margin-top:1rem">',
-      '    <button class="btn btn-secondary" id="apiKeyRevealDone">Done</button>',
+      '  <div class="api-key-warning">',
+      '    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      '    <div>Treat this key like a password. Anyone with it can access your data according to its permissions. You can revoke it anytime from Settings.</div>',
       '  </div>',
+      '</div>',
+      '<div class="api-key-modal-footer">',
+      '  <button class="btn btn-secondary" id="apiKeyRevealDone">Done</button>',
       '</div>',
     ].join('\n');
 
