@@ -22,7 +22,7 @@ services:
       - key: RESEND_FROM
         value: noreply@lumora.dev
       - key: FRONTEND_URL
-        value: https://hellenicdev.github.io/lumora
+        value: https://hellenicdev.eu/lumora
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
