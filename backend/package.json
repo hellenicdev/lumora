@@ -9,6 +9,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@sentry/node": "^10.70.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.4.0",
     "compression": "^1.7.4",
