@@ -53,17 +53,15 @@ app.use((_req, res) => {
   res.status(404).json({ success: false, error: 'Not found' });
 });
 
-if (config.nodeEnv !== 'production') {
-  app.get('/debug-sentry', function mainHandler(_req, res) {
-    // Send a log before throwing the error
-    Sentry.logger.info('User triggered test error', {
-      action: 'test_error_endpoint',
-    });
-    // Send a test metric before throwing the error
-    Sentry.metrics.count('test_counter', 1);
-    throw new Error('My first Sentry error!');
+app.get('/debug-sentry', function mainHandler(_req, res) {
+  // Send a log before throwing the error
+  Sentry.logger.info('User triggered test error', {
+    action: 'test_error_endpoint',
   });
-}
+  // Send a test metric before throwing the error
+  Sentry.metrics.count('test_counter', 1);
+  throw new Error('My first Sentry error!');
+});
 
 Sentry.setupExpressErrorHandler(app);
 
