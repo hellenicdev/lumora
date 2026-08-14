@@ -9,6 +9,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: SENTRY_DSN
+        value: https://f8436f075ecc56fcedee25819d23dde5@o4511908991729664.ingest.de.sentry.io/4511908999200848
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
