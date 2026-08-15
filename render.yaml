@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     buildCommand: npm install
-    startCommand: node server.js
+    startCommand: node --import ./instrument.js server.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
