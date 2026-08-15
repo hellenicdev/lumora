@@ -49,10 +49,6 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use((_req, res) => {
-  res.status(404).json({ success: false, error: 'Not found' });
-});
-
 app.get('/debug-sentry', function mainHandler(_req, res) {
   // Send a log before throwing the error
   Sentry.logger.info('User triggered test error', {
@@ -61,6 +57,10 @@ app.get('/debug-sentry', function mainHandler(_req, res) {
   // Send a test metric before throwing the error
   Sentry.metrics.count('test_counter', 1);
   throw new Error('My first Sentry error!');
+});
+
+app.use((_req, res) => {
+  res.status(404).json({ success: false, error: 'Not found' });
 });
 
 Sentry.setupExpressErrorHandler(app);
