@@ -361,6 +361,21 @@
   line-height: 1.6;
 }
 
+.sponsored-block {
+  border-top: 1px solid var(--border-hover);
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+}
+
+.sponsored-label {
+  display: block;
+  color: var(--text-primary);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
 .footer-links {
   display: flex;
   flex-direction: column;

@@ -52,6 +52,7 @@
     var config = {
       method: method,
       headers: reqHeaders,
+      cache: 'no-store',
     };
 
     if (body) {

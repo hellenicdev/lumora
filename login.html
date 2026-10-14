@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="/lumora/favicon.svg">
-  <link rel="alternate icon" href="/lumora/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="alternate icon" href="./favicon.ico">
   <title>Log in — Lumora</title>
   <meta name="description" content="Log in to your Lumora account to access your repositories and documentation.">
   <meta property="og:title" content="Log in — Lumora">
   <meta property="og:description" content="Log in to your Lumora account to access your repositories and documentation.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://hellenicdev.eu/lumora/">
-  <link rel="stylesheet" href="/lumora/css/main.css">
-  <link rel="stylesheet" href="/lumora/css/auth.css">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/auth.css">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<script src="/lumora/js/toast.js"></script>
+<script src="./js/toast.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9FWQFZME3Z"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9FWQFZME3Z');</script>
 </head>
@@ -22,7 +22,7 @@
   <div class="auth-glow"></div>
   <div class="auth-container">
     <div class="auth-header">
-      <a href="/lumora/" class="logo">Lumora</a>
+      <a href="./" class="logo">Lumora</a>
       <h1>Welcome back</h1>
       <p>Log in to your Lumora account</p>
     </div>
@@ -41,7 +41,7 @@
           <input type="checkbox" id="rememberMe">
           Remember me
         </label>
-        <a href="/lumora/forgot-password.html" class="forgot-link">Forgot password?</a>
+        <a href="./forgot-password.html" class="forgot-link">Forgot password?</a>
       </div>
       <div id="turnstileWidget"></div>
       <button type="submit" class="btn btn-primary auth-submit">Log in</button>
@@ -52,13 +52,13 @@
       </button>
     </form>
     <div class="auth-footer">
-      Don't have an account? <a href="/lumora/register.html">Sign up</a>
+      Don't have an account? <a href="./register.html">Sign up</a>
     </div>
   </div>
-  <script src="/lumora/js/theme.js"></script>
-  <script src="/lumora/js/config.js"></script>
-  <script src="/lumora/js/api.js"></script>
-  <script src="/lumora/js/auth.js"></script>
+  <script src="./js/theme.js"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/auth.js"></script>
   <script>
     document.getElementById('githubLoginBtn')?.addEventListener('click', function () {
       var apiBase = (typeof LUMORA_CONFIG !== 'undefined') ? LUMORA_CONFIG.API_BASE : 'http://localhost:3070/api';
@@ -72,12 +72,12 @@
     })();
   </script>
 <div class="cookie-consent" id="cookieConsent">
-  <p>We use cookies to improve your experience. <a href="/lumora/privacy.html">Learn more</a></p>
+  <p>We use cookies to improve your experience. <a href="./privacy.html">Learn more</a></p>
   <div class="cookie-buttons">
     <button class="btn btn-ghost" id="cookieDecline">Decline</button>
     <button class="btn btn-primary" id="cookieAccept">Accept</button>
   </div>
 </div>
-<script src="/lumora/js/cookie-consent.js"></script>
+<script src="./js/cookie-consent.js"></script>
 </body>
 </html>

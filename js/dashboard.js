@@ -1,5 +1,6 @@
 (function () {
   var currentUser = null;
+  var apiKeys = [];
 
   document.addEventListener('DOMContentLoaded', function () {
     initSidebar();
@@ -651,7 +652,8 @@
 
     try {
       var data = await apiRequest('/api-keys');
-      renderApiKeys(data.data.apiKeys || []);
+      apiKeys = data.data.apiKeys || [];
+      renderApiKeys(apiKeys);
     } catch (err) {
       container.innerHTML = '<p style="color:var(--error);font-size:14px">Failed to load API keys: ' + escHtml(err.message) + '</p>';
     }
@@ -775,6 +777,8 @@
           method: 'POST',
           body: { name: nameInput.value.trim(), permissions: permissions },
         });
+        apiKeys.unshift(data.data.apiKey);
+        renderApiKeys(apiKeys);
         showApiKeyReveal(data.data.key);
         loadApiKeys();
         showToast(data.message || 'API key generated', 'success');
@@ -851,10 +855,12 @@
     }
 
     try {
-      await apiRequest('/api-keys/' + id, {
+      var data = await apiRequest('/api-keys/' + id, {
         method: 'PATCH',
         body: { name: newName },
       });
+      apiKeys = apiKeys.map(function (k) { return k._id === id ? data.data.apiKey : k; });
+      renderApiKeys(apiKeys);
       loadApiKeys();
       showToast('API key renamed', 'success');
     } catch (err) {
@@ -867,6 +873,8 @@
 
     try {
       await apiRequest('/api-keys/' + id, { method: 'DELETE' });
+      apiKeys = apiKeys.filter(function (k) { return k._id !== id; });
+      renderApiKeys(apiKeys);
       loadApiKeys();
       showToast('API key revoked', 'success');
     } catch (err) {
