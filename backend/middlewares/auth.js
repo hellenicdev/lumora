@@ -4,12 +4,19 @@ import User from '../models/User.js';
 
 export async function authenticate(req, res, next) {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
+    let token = null;
+    if (req.cookies && req.cookies.lumora_access_token) {
+      token = req.cookies.lumora_access_token;
+    } else {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      }
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
     const decoded = jwt.verify(token, config.jwt.secret);
 
     const user = await User.findById(decoded.userId);

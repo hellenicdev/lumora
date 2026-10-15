@@ -14,3 +14,10 @@ build/
 3.txt
 4.txt
 5.txt
+
+# Project memory (generated)
+.projectmem/
+
+# Environment files
+.env.*
+!.env.example

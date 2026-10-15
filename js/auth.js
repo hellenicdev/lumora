@@ -77,6 +77,7 @@
       var response = await fetch(API_BASE + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           email: email.value,
           password: password.value,
@@ -127,6 +128,7 @@
       var response = await fetch(API_BASE + '/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: name.value,
           email: email.value,
@@ -168,6 +170,7 @@
       var response = await fetch(API_BASE + '/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           email: email.value,
           turnstileToken: getTurnstileToken(),
@@ -205,6 +208,7 @@
       var response = await fetch(API_BASE + '/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           token: token.value,
           password: password.value,

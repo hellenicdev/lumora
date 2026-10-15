@@ -6,9 +6,12 @@ import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
 import { recordUsage } from '../middlewares/usage.js';
 import { logAuditEvent } from '../utils/audit.js';
+import { getOwnedRepoOr404 } from '../utils/ownership.js';
 
 export async function getHealth(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const health = await calculateHealthScore(req.params.id);
     return success(res, { health });
   } catch (err) {
@@ -18,6 +21,8 @@ export async function getHealth(req, res) {
 
 export async function getSecurity(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const report = await getSecurityReport(req.params.id);
     return success(res, { report });
   } catch (err) {
@@ -27,6 +32,8 @@ export async function getSecurity(req, res) {
 
 export async function runSecurityScan(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const result = await scanRepository(req.params.id, req.user._id);
     await recordUsage(req, 'securityScans');
     await logAuditEvent({
@@ -55,7 +62,7 @@ export async function resolveSecurityIncident(req, res) {
 
 export async function dismissSecurityIncident(req, res) {
   try {
-    const incident = await dismissIncident(req.params.incidentId);
+    const incident = await dismissIncident(req.params.incidentId, req.user._id);
     return success(res, { incident }, 'Incident dismissed');
   } catch (err) {
     return error(res, err.message, 404);
@@ -64,6 +71,8 @@ export async function dismissSecurityIncident(req, res) {
 
 export async function getPersonality(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const personality = await generatePersonality(req.params.id);
     return success(res, { personality });
   } catch (err) {
@@ -75,6 +84,8 @@ export async function analyzeImpact(req, res) {
   try {
     const { file } = req.body;
     if (!file) return error(res, 'File path required', 400);
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
 
     const { generateChangeImpact } = await import('../services/chatService.js');
     const analysis = await generateChangeImpact(req.params.id, file);
@@ -86,6 +97,8 @@ export async function analyzeImpact(req, res) {
 
 export async function getArchitecture(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const diagram = await generateArchitectureDiagram(req.params.id);
     return success(res, { diagram });
   } catch (err) {
@@ -95,6 +108,8 @@ export async function getArchitecture(req, res) {
 
 export async function getArchitectureInsights(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const insights = await getArchitectureInsightsService(req.params.id);
     return success(res, { insights });
   } catch (err) {

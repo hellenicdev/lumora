@@ -17,8 +17,8 @@ const analysisJobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['queued', 'running', 'completed', 'failed'],
-    default: 'queued',
+    enum: ['Queued', 'Cloning', 'Scanning', 'Generating docs', 'Complete', 'Failed'],
+    default: 'Queued',
   },
   progress: {
     type: Number,

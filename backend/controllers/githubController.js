@@ -98,9 +98,17 @@ export async function callback(req, res) {
     const refreshTokenStr = authService.generateRefreshToken();
     await authService.createRefreshTokenDocument(user._id, refreshTokenStr, true);
 
-    return res.redirect(
-      `${config.frontendUrl}/github-callback.html#access_token=${jwtToken}&refresh_token=${refreshTokenStr}`
-    );
+    const isProd = config.nodeEnv === 'production';
+    const cookieBase = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    };
+    res.cookie('lumora_access_token', jwtToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
+    res.cookie('lumora_refresh_token', refreshTokenStr, { ...cookieBase, maxAge: 30 * 24 * 60 * 60 * 1000 });
+
+    return res.redirect(`${config.frontendUrl}/dashboard.html?github=connected`);
   } catch (err) {
     logger.error('GitHub callback failed', { error: err.message, stack: err.stack });
     return res.redirect(`${config.frontendUrl}/login.html?github=error&msg=${encodeURIComponent(err.message)}`);

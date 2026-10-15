@@ -30,7 +30,7 @@ export async function startImport(userId, owner, repo, branch) {
     userId,
     repositoryId: repository._id,
     type: 'import',
-    status: 'queued',
+    status: 'Queued',
   });
 
   notifyUser(userId, 'info', 'Repository import started', `${repoInfo.full_name}`);
@@ -54,7 +54,7 @@ export async function startReimport(repository, userId, owner, repo, branch) {
     userId,
     repositoryId: repository._id,
     type: 'import',
-    status: 'queued',
+    status: 'Queued',
   });
 
   notifyUser(userId, 'info', 'Repository reimport started', `${repoInfo.full_name}`);
@@ -67,7 +67,7 @@ export async function processImport(job) {
   const updateProgress = (progress) => updateJobProgress(jobId, repositoryId, userId, progress);
 
   try {
-    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'running', progress: 0 });
+    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'Cloning', progress: 0 });
     await Repository.findByIdAndUpdate(repositoryId, { analysisStatus: 'analyzing' });
 
     updateProgress(5);
@@ -110,6 +110,7 @@ export async function processImport(job) {
       size: estimateSize(tree.tree),
     });
 
+    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'Scanning', progress: 70 });
     let analysisResults = { files: [], functions: [], classes: [], imports: [], routes: [], models: [], services: [] };
     try {
       analysisResults = await scanRepository(repositoryId, accessToken, repository, tree.tree || files);
@@ -117,6 +118,7 @@ export async function processImport(job) {
       logger.warn('Static analysis failed', { repositoryId, error: err.message });
     }
 
+    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'Generating docs', progress: 80 });
     updateProgress(80);
 
     try {
@@ -127,14 +129,14 @@ export async function processImport(job) {
 
     updateProgress(90);
 
-    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'completed', progress: 100 });
+    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'Complete', progress: 100 });
     await Repository.findByIdAndUpdate(repositoryId, { analysisStatus: 'completed' });
 
     notifyUser(userId, 'success', 'Repository imported', `${repository.fullName} imported successfully with ${fileCount} files.`);
 
     return { repositoryId, snapshotId: snapshot._id, filesCount: fileCount };
   } catch (err) {
-    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'failed', error: err.message });
+    await AnalysisJob.findByIdAndUpdate(jobId, { status: 'Failed', error: err.message });
     await Repository.findByIdAndUpdate(repositoryId, { analysisStatus: 'failed' });
     notifyUser(userId, 'error', 'Import failed', err.message);
     throw err;

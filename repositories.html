@@ -145,15 +145,11 @@
         </div>
         <p>Enter the GitHub repository details to import.</p>
         <form id="importForm" class="import-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="importOwner">Owner</label>
-              <input type="text" id="importOwner" class="input" placeholder="e.g. facebook" required>
-            </div>
-            <div class="form-group">
-              <label for="importRepo">Repository</label>
-              <input type="text" id="importRepo" class="input" placeholder="e.g. react" required>
-            </div>
+          <div class="form-group">
+            <label for="repoSearch">Choose a GitHub repository</label>
+            <input type="text" id="repoSearch" class="input" placeholder="Search your GitHub repositories..." autocomplete="off">
+            <div id="repoPickerList" style="max-height:220px;overflow:auto;margin-top:8px;border:1px solid var(--border);border-radius:8px"></div>
+            <input type="hidden" id="selectedRepoFullName">
           </div>
           <div class="form-group">
             <label for="importBranch">Branch (optional)</label>

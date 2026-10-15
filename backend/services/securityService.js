@@ -3,6 +3,7 @@ import Repository from '../models/Repository.js';
 import RepositorySnapshot from '../models/RepositorySnapshot.js';
 import User from '../models/User.js';
 import { getIO } from '../socket/index.js';
+import { fetchFileContent } from '../github/client.js';
 import { sendEmail } from './emailService.js';
 import { logger } from '../utils/logger.js';
 
@@ -129,7 +130,7 @@ const SECRET_PATTERNS = [
 ];
 
 export async function scanRepository(repositoryId, userId) {
-  const repo = await Repository.findById(repositoryId);
+  const repo = await Repository.findOne({ _id: repositoryId, userId });
   if (!repo) throw new Error('Repository not found');
 
   const snapshot = await RepositorySnapshot.findOne({ repositoryId }).sort({ createdAt: -1 });
@@ -153,7 +154,7 @@ export async function scanRepository(repositoryId, userId) {
     if (!textExtensions.has(ext)) continue;
 
     try {
-      const content = await fetchFileContent(repo, file.path);
+      const content = await fetchFileContent(userId, repo.fullName.split('/')[0], repo.fullName.split('/').slice(1).join('/'), file.path);
       if (!content) continue;
 
       const lines = content.split('\n');
@@ -214,22 +215,6 @@ export async function scanRepository(repositoryId, userId) {
     warningCount: allOpen.filter((i) => i.severity === 'warning').length,
     highCount: allOpen.filter((i) => i.severity === 'high').length,
   };
-}
-
-async function fetchFileContent(repo, path) {
-  const response = await fetch(`https://api.github.com/repos/${repo.fullName}/contents/${path}`, {
-    headers: {
-      Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN || ''}`,
-      Accept: 'application/vnd.github.v3+json',
-    },
-  });
-
-  if (!response.ok) return null;
-  const data = await response.json();
-  if (data.content) {
-    return Buffer.from(data.content, 'base64').toString('utf-8');
-  }
-  return null;
 }
 
 function maskValue(value) {
@@ -340,21 +325,27 @@ function calculateSecurityScore(open, critical, high) {
 }
 
 export async function resolveIncident(incidentId, userId) {
-  const incident = await SecurityIncident.findByIdAndUpdate(
-    incidentId,
-    { status: 'resolved', resolvedAt: new Date(), resolvedBy: userId },
-    { new: true },
-  );
+  const incident = await SecurityIncident.findById(incidentId);
   if (!incident) throw new Error('Incident not found');
+
+  const repo = await Repository.findOne({ _id: incident.repositoryId, userId });
+  if (!repo) throw new Error('Incident not found');
+
+  incident.status = 'resolved';
+  incident.resolvedAt = new Date();
+  incident.resolvedBy = userId;
+  await incident.save();
   return incident;
 }
 
-export async function dismissIncident(incidentId) {
-  const incident = await SecurityIncident.findByIdAndUpdate(
-    incidentId,
-    { status: 'dismissed' },
-    { new: true },
-  );
+export async function dismissIncident(incidentId, userId) {
+  const incident = await SecurityIncident.findById(incidentId);
   if (!incident) throw new Error('Incident not found');
+
+  const repo = await Repository.findOne({ _id: incident.repositoryId, userId });
+  if (!repo) throw new Error('Incident not found');
+
+  incident.status = 'dismissed';
+  await incident.save();
   return incident;
 }

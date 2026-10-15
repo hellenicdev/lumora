@@ -28,6 +28,13 @@ export async function getSessions(userId, repositoryId) {
   return sessions;
 }
 
+export async function deleteSession(sessionId, userId) {
+  const session = await ChatSession.findOneAndDelete({ _id: sessionId, userId });
+  if (!session) throw new Error('Session not found');
+  await ChatMessage.deleteMany({ sessionId });
+  return session;
+}
+
 export async function getSession(sessionId, userId) {
   const session = await ChatSession.findOne({ _id: sessionId, userId }).lean();
   if (!session) throw new Error('Session not found');

@@ -4,6 +4,7 @@ import { getSecurityReport } from '../services/securityService.js';
 import { generateArchitectureDiagram } from '../services/architectureService.js';
 import ShareableReport from '../models/ShareableReport.js';
 import Repository from '../models/Repository.js';
+import { getOwnedRepoOr404 } from '../utils/ownership.js';
 import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
 import { recordUsage } from '../middlewares/usage.js';
@@ -11,6 +12,8 @@ import crypto from 'crypto';
 
 export async function getOnboardingReport(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const report = await generateOnboardingReport(req.params.id);
     await recordUsage(req, 'docGenerations');
     return success(res, { report }, 'Onboarding report generated');
@@ -23,7 +26,7 @@ export async function shareReport(req, res) {
   try {
     const { type = 'onboarding', expiresInDays = null } = req.body;
 
-    const repo = await Repository.findById(req.params.id);
+    const repo = await Repository.findOne({ _id: req.params.id, userId: req.user._id });
     if (!repo) return error(res, 'Repository not found', 404);
 
     let reportData;

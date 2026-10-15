@@ -14,6 +14,7 @@ import { getAccessTokenForUser, fetchFileContent } from '../github/client.js';
 import { getQueue } from '../jobs/queue.js';
 import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
+import { getOwnedRepoOr404 } from '../utils/ownership.js';
 import { logAuditEvent } from '../utils/audit.js';
 import { recordUsage } from '../middlewares/usage.js';
 
@@ -144,6 +145,8 @@ export async function getFiles(req, res) {
 
 export async function getRoutes(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const endpoints = await ApiEndpoint.find({ repositoryId: req.params.id }).lean();
     return success(res, { routes: endpoints });
   } catch (err) {
@@ -153,6 +156,8 @@ export async function getRoutes(req, res) {
 
 export async function getDependencies(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const deps = await Dependency.find({ repositoryId: req.params.id }).lean();
     return success(res, { dependencies: deps });
   } catch (err) {
@@ -162,6 +167,8 @@ export async function getDependencies(req, res) {
 
 export async function getEnvVars(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const envVars = await EnvironmentVariable.find({ repositoryId: req.params.id }).lean();
     return success(res, { environmentVariables: envVars });
   } catch (err) {
@@ -171,6 +178,8 @@ export async function getEnvVars(req, res) {
 
 export async function getGraphData(req, res) {
   try {
+    const repoCheck = await getOwnedRepoOr404(req, res);
+    if (!repoCheck) return;
     let graph = await getGraph(req.params.id);
 
     if (!graph.nodes || graph.nodes.length === 0) {

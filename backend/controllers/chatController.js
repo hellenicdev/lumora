@@ -1,4 +1,5 @@
 import * as chatService from '../services/chatService.js';
+import Repository from '../models/Repository.js';
 import { success, error } from '../utils/response.js';
 import { getIO } from '../socket/index.js';
 import { logger } from '../utils/logger.js';
@@ -9,6 +10,9 @@ export async function createSession(req, res) {
   try {
     const { repositoryId, title } = req.body;
     if (!repositoryId) return error(res, 'Repository ID required', 400);
+
+    const ownedRepo = await Repository.findOne({ _id: repositoryId, userId: req.user._id });
+    if (!ownedRepo) return error(res, 'Repository not found', 404);
 
     const session = await chatService.createSession(req.user._id, repositoryId, title);
     return success(res, { session }, 'Chat session created', 201);
@@ -117,6 +121,9 @@ export async function explainProject(req, res) {
     const { repositoryId } = req.body;
     if (!repositoryId) return error(res, 'Repository ID required', 400);
 
+    const ownedRepo = await Repository.findOne({ _id: repositoryId, userId: req.user._id });
+    if (!ownedRepo) return error(res, 'Repository not found', 404);
+
     const explanation = await chatService.generateProjectExplanation(repositoryId);
     return success(res, { explanation });
   } catch (err) {
@@ -128,6 +135,9 @@ export async function analyzeImpact(req, res) {
   try {
     const { repositoryId, file } = req.body;
     if (!repositoryId || !file) return error(res, 'Repository ID and file path required', 400);
+
+    const ownedRepo = await Repository.findOne({ _id: repositoryId, userId: req.user._id });
+    if (!ownedRepo) return error(res, 'Repository not found', 404);
 
     const analysis = await chatService.generateChangeImpact(repositoryId, file);
     return success(res, { analysis });

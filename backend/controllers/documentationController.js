@@ -6,9 +6,12 @@ import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
 import { recordUsage } from '../middlewares/usage.js';
 import { logAuditEvent } from '../utils/audit.js';
+import { getOwnedRepoOr404 } from '../utils/ownership.js';
 
 export async function listDocs(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const docs = await DocumentationVersion.find({ repositoryId: req.params.id })
       .sort({ createdAt: -1 })
       .lean();
@@ -27,6 +30,8 @@ export async function listDocs(req, res) {
 
 export async function generateAll(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const result = await generateAllDocs(req.params.id, req.user._id);
     await recordUsage(req, 'docGenerations');
     await logAuditEvent({
@@ -45,6 +50,8 @@ export async function generateAll(req, res) {
 
 export async function generateByType(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const { type } = req.params;
     const validTypes = ['README', 'WIKI', 'API_DOC', 'ARCHITECTURE'];
 
@@ -70,6 +77,8 @@ export async function generateByType(req, res) {
 
 export async function getDocByType(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const doc = await DocumentationVersion.findOne({
       repositoryId: req.params.id,
       type: req.params.type,
@@ -87,6 +96,8 @@ export async function getDocByType(req, res) {
 
 export async function getHistory(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const docs = await DocumentationVersion.find({
       repositoryId: req.params.id,
     }).sort({ createdAt: -1 }).limit(20).lean();
@@ -99,6 +110,8 @@ export async function getHistory(req, res) {
 
 export async function checkDrift(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const result = await detectDrift(req.params.id);
     return success(res, result);
   } catch (err) {
@@ -108,6 +121,8 @@ export async function checkDrift(req, res) {
 
 export async function getQualityScore(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const result = await generateQualityScore(req.params.id);
     return success(res, result);
   } catch (err) {
@@ -117,6 +132,8 @@ export async function getQualityScore(req, res) {
 
 export async function getDocVersions(req, res) {
   try {
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     const docs = await DocumentationVersion.find({
       repositoryId: req.params.id,
       type: req.params.type,

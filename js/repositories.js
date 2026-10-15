@@ -1,4 +1,6 @@
 (function () {
+  var githubRepos = null;
+  var selectedRepo = null;
   document.addEventListener('DOMContentLoaded', function () {
     var pageEl = document.getElementById('repositoriesPage');
     if (pageEl) {
@@ -18,6 +20,13 @@
     var closeModal = document.getElementById('closeImportModal');
     if (closeModal) {
       closeModal.addEventListener('click', closeImportModal);
+    }
+
+    var repoSearch = document.getElementById('repoSearch');
+    if (repoSearch) {
+      repoSearch.addEventListener('input', function () {
+        renderRepoPicker(repoSearch.value);
+      });
     }
 
     var githubConnect = document.getElementById('githubConnectBtn');
@@ -116,11 +125,63 @@
   function openImportModal() {
     var modal = document.getElementById('importModal');
     if (modal) modal.classList.add('open');
+    loadGitHubReposForPicker();
   }
 
   function closeImportModal() {
     var modal = document.getElementById('importModal');
     if (modal) modal.classList.remove('open');
+  }
+
+  async function loadGitHubReposForPicker() {
+    var list = document.getElementById('repoPickerList');
+    if (!list) return;
+    list.innerHTML = '<div style="padding:12px;color:var(--text-muted)">Loading repositories...</div>';
+    try {
+      if (!githubRepos) {
+        var data = await apiRequest('/github/repositories');
+        githubRepos = data.data.repositories || [];
+      }
+      renderRepoPicker(document.getElementById('repoSearch') ? document.getElementById('repoSearch').value : '');
+    } catch (err) {
+      list.innerHTML = '<div style="padding:12px;color:var(--error)">Could not load GitHub repos. Connect GitHub first.</div>';
+    }
+  }
+
+  function renderRepoPicker(query) {
+    var list = document.getElementById('repoPickerList');
+    if (!list || !githubRepos) return;
+    query = (query || '').toLowerCase();
+    var filtered = githubRepos.filter(function (r) {
+      return !query || (r.fullName || '').toLowerCase().indexOf(query) >= 0;
+    }).slice(0, 50);
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div style="padding:12px;color:var(--text-muted)">No repositories match.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(function (r) {
+      var active = selectedRepo && selectedRepo.id === r.id ? 'background:var(--accent);color:#fff;' : '';
+      return '<div class="repo-picker-item" data-id="' + r.id + '" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);' + active + '">' +
+        '<div style="font-weight:600">' + (r.fullName || r.name) + '</div>' +
+        '<div style="font-size:12px;color:var(--text-muted)">' + (r.description || '') + '</div>' +
+        '</div>';
+    }).join('');
+
+    Array.prototype.forEach.call(list.querySelectorAll('.repo-picker-item'), function (el) {
+      el.addEventListener('click', function () {
+        var id = parseInt(el.getAttribute('data-id'), 10);
+        selectedRepo = githubRepos.find(function (r) { return r.id === id; }) || null;
+        var hidden = document.getElementById('selectedRepoFullName');
+        if (hidden && selectedRepo) hidden.value = selectedRepo.fullName;
+        var branch = document.getElementById('importBranch');
+        if (branch && selectedRepo && selectedRepo.defaultBranch && !branch.value) {
+          branch.placeholder = selectedRepo.defaultBranch || 'main';
+        }
+        renderRepoPicker(document.getElementById('repoSearch').value);
+      });
+    });
   }
 
   async function handleImport(e) {
@@ -131,11 +192,10 @@
       btn.textContent = 'Importing...';
     }
 
-    var ownerEl = document.getElementById('importOwner');
-    var repoEl = document.getElementById('importRepo');
+    var hiddenRepo = document.getElementById('selectedRepoFullName');
     var branchEl = document.getElementById('importBranch');
-    if (!ownerEl || !repoEl) {
-      showToast('Missing form fields', 'error');
+    if (!hiddenRepo || !hiddenRepo.value) {
+      showToast('Please select a repository', 'error');
       if (btn) {
         btn.disabled = false;
         btn.textContent = 'Import Repository';
@@ -143,13 +203,17 @@
       return;
     }
 
+    var parts = hiddenRepo.value.split('/');
+    var owner = parts[0];
+    var repoName = parts.slice(1).join('/');
+
     try {
       await apiRequest('/repositories/import', {
         method: 'POST',
         body: {
-          owner: ownerEl.value.trim(),
-          repo: repoEl.value.trim(),
-          branch: branchEl ? branchEl.value.trim() || undefined : undefined,
+          owner: owner,
+          repo: repoName,
+          branch: branchEl ? (branchEl.value.trim() || undefined) : undefined,
         },
       });
 

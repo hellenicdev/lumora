@@ -30,16 +30,24 @@ export async function register(req, res) {
     const refreshTokenStr = authService.generateRefreshToken();
     await authService.createRefreshTokenDocument(result.user.id, refreshTokenStr, false);
 
-    const verificationLink = `${config.frontendUrl}/verify-email?token=${result.verificationToken}`;
+    const verificationLink = `${config.frontendUrl}/verify-email.html?token=${result.verificationToken}`;
     const emailData = buildVerificationEmail(verificationLink);
     await sendEmail({ to: email, ...emailData });
 
     logger.info('User registered', { email });
 
+    const isProd = config.nodeEnv === 'production';
+    const cookieBase = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    };
+    res.cookie('lumora_access_token', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
+    res.cookie('lumora_refresh_token', refreshTokenStr, { ...cookieBase, maxAge: 7 * 24 * 60 * 60 * 1000 });
+
     return success(res, {
       user: result.user,
-      accessToken,
-      refreshToken: refreshTokenStr,
     }, 'Registration successful. Please verify your email.', 201);
   } catch (err) {
     if (err.message === 'Email already registered') {
@@ -59,12 +67,21 @@ export async function login(req, res) {
     const refreshTokenStr = authService.generateRefreshToken();
     await authService.createRefreshTokenDocument(user._id, refreshTokenStr, rememberMe);
 
+    const isProd = config.nodeEnv === 'production';
+    const cookieBase = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    };
+    const refreshMaxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+    res.cookie('lumora_access_token', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
+    res.cookie('lumora_refresh_token', refreshTokenStr, { ...cookieBase, maxAge: refreshMaxAge });
+
     logger.info('User logged in', { email });
 
     return success(res, {
       user: user.toSafeObject(),
-      accessToken,
-      refreshToken: refreshTokenStr,
     }, 'Login successful');
   } catch (err) {
     if (err.message === 'Invalid email or password') {
@@ -77,13 +94,24 @@ export async function login(req, res) {
 
 export async function refresh(req, res) {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.lumora_refresh_token || req.body?.refreshToken;
     if (!refreshToken) {
       return error(res, 'Refresh token required', 400);
     }
 
     const result = await authService.refreshAccessToken(refreshToken);
-    return success(res, result, 'Token refreshed');
+
+    const isProd = config.nodeEnv === 'production';
+    const cookieBase = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    };
+    res.cookie('lumora_access_token', result.accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
+    res.cookie('lumora_refresh_token', result.refreshToken, { ...cookieBase, maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    return success(res, { user: result.user }, 'Token refreshed');
   } catch (err) {
     return error(res, err.message, 401);
   }
@@ -91,10 +119,19 @@ export async function refresh(req, res) {
 
 export async function logout(req, res) {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.lumora_refresh_token || req.body?.refreshToken;
     if (refreshToken) {
       await authService.logoutUser(refreshToken);
     }
+    const isProd = config.nodeEnv === 'production';
+    const cookieBase = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    };
+    res.clearCookie('lumora_access_token', cookieBase);
+    res.clearCookie('lumora_refresh_token', cookieBase);
     return success(res, null, 'Logged out successfully');
   } catch (err) {
     return error(res, 'Logout failed', 500);
@@ -104,6 +141,10 @@ export async function logout(req, res) {
 export async function logoutEverywhere(req, res) {
   try {
     await authService.logoutEverywhere(req.user._id);
+    const isProd = config.nodeEnv === 'production';
+    const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax', path: '/' };
+    res.clearCookie('lumora_access_token', cookieBase);
+    res.clearCookie('lumora_refresh_token', cookieBase);
     return success(res, null, 'Logged out everywhere');
   } catch (err) {
     return error(res, 'Logout failed', 500);
@@ -126,7 +167,7 @@ export async function forgotPassword(req, res) {
     const resetToken = await authService.forgotPassword(email);
 
     if (resetToken) {
-      const resetLink = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+      const resetLink = `${config.frontendUrl}/reset-password.html?token=${resetToken}`;
       const emailData = buildPasswordResetEmail(resetLink);
       await sendEmail({ to: email, ...emailData });
     }
@@ -172,6 +213,10 @@ export async function changePassword(req, res) {
     req.user.password = newPassword;
     await req.user.save();
     await authService.logoutEverywhere(req.user._id);
+    const isProd = config.nodeEnv === 'production';
+    const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax', path: '/' };
+    res.clearCookie('lumora_access_token', cookieBase);
+    res.clearCookie('lumora_refresh_token', cookieBase);
     return success(res, null, 'Password changed. Please login again.');
   } catch (err) {
     return error(res, 'Failed to change password', 500);

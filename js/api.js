@@ -1,29 +1,19 @@
 (function () {
   var API_BASE = (typeof LUMORA_CONFIG !== 'undefined') ? LUMORA_CONFIG.API_BASE : 'http://localhost:3070/api';
   window.API_BASE = API_BASE;
-  var accessToken = localStorage.getItem('lumora-access-token');
-  var refreshToken = localStorage.getItem('lumora-refresh-token');
+  // Tokens are now stored in secure HttpOnly cookies by the backend.
+  // Keep thin wrappers for compatibility with older call sites.
+  var accessToken = null;
+  var refreshToken = null;
 
   window.setTokens = function (access, refresh) {
-    accessToken = access;
-    refreshToken = refresh;
-    if (access) {
-      localStorage.setItem('lumora-access-token', access);
-    } else {
-      localStorage.removeItem('lumora-access-token');
-    }
-    if (refresh) {
-      localStorage.setItem('lumora-refresh-token', refresh);
-    } else {
-      localStorage.removeItem('lumora-refresh-token');
-    }
+    accessToken = access || null;
+    refreshToken = refresh || null;
   };
 
   window.clearTokens = function () {
     accessToken = null;
     refreshToken = null;
-    localStorage.removeItem('lumora-access-token');
-    localStorage.removeItem('lumora-refresh-token');
   };
 
   window.getAccessToken = function () {
@@ -52,6 +42,7 @@
     var config = {
       method: method,
       headers: reqHeaders,
+      credentials: 'include',
       cache: 'no-store',
     };
 
@@ -96,7 +87,8 @@
       var response = await fetch(API_BASE + '/auth/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: refreshToken }),
+        credentials: 'include',
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -106,7 +98,9 @@
       }
 
       var data = await response.json();
-      setTokens(data.data.accessToken, data.data.refreshToken);
+      if (data && data.data && data.data.accessToken) {
+        setTokens(data.data.accessToken, data.data.refreshToken);
+      }
       return true;
     } catch (e) {
       clearTokens();
