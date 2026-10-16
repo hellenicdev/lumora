@@ -108,9 +108,9 @@ export async function refresh(req, res) {
       sameSite: isProd ? 'none' : 'lax',
       path: '/',
     };
+    const refreshMaxAge = result.rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
     res.cookie('lumora_access_token', result.accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
-    res.cookie('lumora_refresh_token', result.refreshToken, { ...cookieBase, maxAge: 7 * 24 * 60 * 60 * 1000 });
-
+    res.cookie('lumora_refresh_token', result.refreshToken, { ...cookieBase, maxAge: refreshMaxAge });
     return success(res, { user: result.user }, 'Token refreshed');
   } catch (err) {
     return error(res, err.message, 401);

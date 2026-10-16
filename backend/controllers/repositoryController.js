@@ -178,13 +178,12 @@ export async function getEnvVars(req, res) {
 
 export async function getGraphData(req, res) {
   try {
-    const repoCheck = await getOwnedRepoOr404(req, res);
-    if (!repoCheck) return;
+    const repo = await getOwnedRepoOr404(req, res);
+    if (!repo) return;
     let graph = await getGraph(req.params.id);
 
     if (!graph.nodes || graph.nodes.length === 0) {
       try {
-        const repo = await Repository.findOne({ _id: req.params.id, userId: req.user._id });
         if (!repo || !repo.fullName) return success(res, { graph });
 
         const snapshot = await RepositorySnapshot.findOne({ repositoryId: repo._id }).sort({ createdAt: -1 });

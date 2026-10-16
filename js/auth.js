@@ -96,7 +96,9 @@
         return;
       }
 
-      setTokens(data.data.accessToken, data.data.refreshToken);
+      if (data.data && data.data.accessToken) {
+        setTokens(data.data.accessToken, data.data.refreshToken);
+      }
       window.location.href = '/lumora/dashboard.html';
     } catch (err) {
       showAlert('Connection error. Please try again.', 'error');
@@ -147,7 +149,9 @@
         return;
       }
 
-      setTokens(data.data.accessToken, data.data.refreshToken);
+      if (data.data && data.data.accessToken) {
+        setTokens(data.data.accessToken, data.data.refreshToken);
+      }
       showAlert('Account created! Check your email to verify.', 'success');
       setTimeout(function () { window.location.href = '/lumora/dashboard.html'; }, 2000);
     } catch (err) {

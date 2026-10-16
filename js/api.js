@@ -56,7 +56,7 @@
       var data = contentType.includes('json') ? await response.json() : {};
 
       if (!response.ok) {
-        if (response.status === 401 && refreshToken) {
+        if (response.status === 401) {
           var refreshed = await attemptRefresh();
           if (refreshed) {
             reqHeaders['Authorization'] = 'Bearer ' + accessToken;

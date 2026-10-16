@@ -26,6 +26,7 @@ export async function createRefreshTokenDocument(userId, token, rememberMe = fal
     userId,
     token,
     expiresAt: new Date(Date.now() + expiresInMs),
+    rememberMe,
   });
 }
 
@@ -102,9 +103,10 @@ export async function refreshAccessToken(refreshTokenStr) {
   stored.revoked = true;
   await stored.save();
 
-  await createRefreshTokenDocument(user._id, newRefreshToken);
+  const rememberMe = stored.rememberMe === true;
+  await createRefreshTokenDocument(user._id, newRefreshToken, rememberMe);
 
-  return { accessToken: newAccessToken, refreshToken: newRefreshToken, user: user.toSafeObject() };
+  return { accessToken: newAccessToken, refreshToken: newRefreshToken, user: user.toSafeObject(), rememberMe };
 }
 
 export async function logoutUser(refreshTokenStr) {

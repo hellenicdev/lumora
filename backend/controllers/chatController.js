@@ -1,5 +1,6 @@
 import * as chatService from '../services/chatService.js';
 import Repository from '../models/Repository.js';
+import { getOwnedRepoOr404 } from '../utils/ownership.js';
 import { success, error } from '../utils/response.js';
 import { getIO } from '../socket/index.js';
 import { logger } from '../utils/logger.js';
@@ -11,8 +12,8 @@ export async function createSession(req, res) {
     const { repositoryId, title } = req.body;
     if (!repositoryId) return error(res, 'Repository ID required', 400);
 
-    const ownedRepo = await Repository.findOne({ _id: repositoryId, userId: req.user._id });
-    if (!ownedRepo) return error(res, 'Repository not found', 404);
+    const ownedRepo = await getOwnedRepoOr404(req, res, repositoryId);
+    if (!ownedRepo) return;
 
     const session = await chatService.createSession(req.user._id, repositoryId, title);
     return success(res, { session }, 'Chat session created', 201);
@@ -112,6 +113,7 @@ export async function deleteSession(req, res) {
     });
     return success(res, null, 'Session deleted');
   } catch (err) {
+    if (err.message === 'Session not found') return error(res, err.message, 404);
     return error(res, 'Failed to delete session', 500);
   }
 }
@@ -121,8 +123,8 @@ export async function explainProject(req, res) {
     const { repositoryId } = req.body;
     if (!repositoryId) return error(res, 'Repository ID required', 400);
 
-    const ownedRepo = await Repository.findOne({ _id: repositoryId, userId: req.user._id });
-    if (!ownedRepo) return error(res, 'Repository not found', 404);
+    const ownedRepo = await getOwnedRepoOr404(req, res, repositoryId);
+    if (!ownedRepo) return;
 
     const explanation = await chatService.generateProjectExplanation(repositoryId);
     return success(res, { explanation });
@@ -136,8 +138,8 @@ export async function analyzeImpact(req, res) {
     const { repositoryId, file } = req.body;
     if (!repositoryId || !file) return error(res, 'Repository ID and file path required', 400);
 
-    const ownedRepo = await Repository.findOne({ _id: repositoryId, userId: req.user._id });
-    if (!ownedRepo) return error(res, 'Repository not found', 404);
+    const ownedRepo = await getOwnedRepoOr404(req, res, repositoryId);
+    if (!ownedRepo) return;
 
     const analysis = await chatService.generateChangeImpact(repositoryId, file);
     return success(res, { analysis });

@@ -56,7 +56,8 @@ export async function resolveSecurityIncident(req, res) {
     const incident = await resolveIncident(req.params.incidentId, req.user._id);
     return success(res, { incident }, 'Incident resolved');
   } catch (err) {
-    return error(res, err.message, 404);
+    if (err.message === 'Incident not found') return error(res, err.message, 404);
+    return error(res, err.message, 500);
   }
 }
 
@@ -65,7 +66,8 @@ export async function dismissSecurityIncident(req, res) {
     const incident = await dismissIncident(req.params.incidentId, req.user._id);
     return success(res, { incident }, 'Incident dismissed');
   } catch (err) {
-    return error(res, err.message, 404);
+    if (err.message === 'Incident not found') return error(res, err.message, 404);
+    return error(res, err.message, 500);
   }
 }
 
@@ -82,10 +84,10 @@ export async function getPersonality(req, res) {
 
 export async function analyzeImpact(req, res) {
   try {
-    const { file } = req.body;
-    if (!file) return error(res, 'File path required', 400);
     const repo = await getOwnedRepoOr404(req, res);
     if (!repo) return;
+    const { file } = req.body;
+    if (!file) return error(res, 'File path required', 400);
 
     const { generateChangeImpact } = await import('../services/chatService.js');
     const analysis = await generateChangeImpact(req.params.id, file);

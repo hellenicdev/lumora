@@ -1,6 +1,14 @@
 (function () {
   var githubRepos = null;
   var selectedRepo = null;
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
   document.addEventListener('DOMContentLoaded', function () {
     var pageEl = document.getElementById('repositoriesPage');
     if (pageEl) {
@@ -138,10 +146,8 @@
     if (!list) return;
     list.innerHTML = '<div style="padding:12px;color:var(--text-muted)">Loading repositories...</div>';
     try {
-      if (!githubRepos) {
-        var data = await apiRequest('/github/repositories');
-        githubRepos = data.data.repositories || [];
-      }
+      var data = await apiRequest('/github/repositories');
+      githubRepos = data.data.repositories || [];
       renderRepoPicker(document.getElementById('repoSearch') ? document.getElementById('repoSearch').value : '');
     } catch (err) {
       list.innerHTML = '<div style="padding:12px;color:var(--error)">Could not load GitHub repos. Connect GitHub first.</div>';
@@ -163,9 +169,11 @@
 
     list.innerHTML = filtered.map(function (r) {
       var active = selectedRepo && selectedRepo.id === r.id ? 'background:var(--accent);color:#fff;' : '';
-      return '<div class="repo-picker-item" data-id="' + r.id + '" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);' + active + '">' +
-        '<div style="font-weight:600">' + (r.fullName || r.name) + '</div>' +
-        '<div style="font-size:12px;color:var(--text-muted)">' + (r.description || '') + '</div>' +
+      var name = escapeHtml(r.fullName || r.name || '');
+      var description = escapeHtml(r.description || '');
+      return '<div class="repo-picker-item" data-id="' + encodeURIComponent(r.id) + '" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);' + active + '">' +
+        '<div style="font-weight:600">' + name + '</div>' +
+        '<div style="font-size:12px;color:var(--text-muted)">' + description + '</div>' +
         '</div>';
     }).join('');
 
@@ -179,7 +187,8 @@
         if (branch && selectedRepo && selectedRepo.defaultBranch && !branch.value) {
           branch.placeholder = selectedRepo.defaultBranch || 'main';
         }
-        renderRepoPicker(document.getElementById('repoSearch').value);
+        var searchInput = document.getElementById('repoSearch');
+        renderRepoPicker(searchInput ? searchInput.value : '');
       });
     });
   }

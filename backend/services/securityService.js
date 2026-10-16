@@ -132,12 +132,17 @@ const SECRET_PATTERNS = [
 export async function scanRepository(repositoryId, userId) {
   const repo = await Repository.findOne({ _id: repositoryId, userId });
   if (!repo) throw new Error('Repository not found');
+  if (!repo.fullName || !repo.fullName.includes('/')) {
+    throw new Error('Repository fullName is missing or invalid');
+  }
 
   const snapshot = await RepositorySnapshot.findOne({ repositoryId }).sort({ createdAt: -1 });
   if (!snapshot || !snapshot.tree) {
     throw new Error('No repository snapshot found. Import the repository first.');
   }
 
+  const [owner, ...repoParts] = repo.fullName.split('/');
+  const repoName = repoParts.join('/');
   const fileEntries = snapshot.tree.filter((item) => item.type === 'blob');
 
   const textExtensions = new Set([
@@ -154,7 +159,7 @@ export async function scanRepository(repositoryId, userId) {
     if (!textExtensions.has(ext)) continue;
 
     try {
-      const content = await fetchFileContent(userId, repo.fullName.split('/')[0], repo.fullName.split('/').slice(1).join('/'), file.path);
+      const content = await fetchFileContent(userId, owner, repoName, file.path);
       if (!content) continue;
 
       const lines = content.split('\n');
