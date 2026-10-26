@@ -70,11 +70,12 @@
 
       el.innerHTML = orgs.map(function (org) {
         const memberCount = org.members ? org.members.length : 1;
-        return '<a href="/lumora/organization.html?id=' + org._id + '" class="org-card card">' +
-          '<div class="org-icon">' + org.name.charAt(0).toUpperCase() + '</div>' +
-          '<div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:600">' + org.name + '</div>' +
-          '<div style="font-size:13px;color:var(--text-muted)">' + memberCount + ' member(s) · ' + (org.role || 'member') + '</div></div>' +
-          '<span class="badge badge-primary" style="margin-left:auto;align-self:center">' + (org.plan || 'free') + '</span></a>';
+        const name = org.name || '';
+        return '<a href="/lumora/organization.html?id=' + encodeURIComponent(org._id || '') + '" class="org-card card">' +
+          '<div class="org-icon">' + escHtml(name.charAt(0).toUpperCase()) + '</div>' +
+          '<div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:600">' + escHtml(name) + '</div>' +
+          '<div style="font-size:13px;color:var(--text-muted)">' + memberCount + ' member(s) · ' + escHtml(org.role || 'member') + '</div></div>' +
+          '<span class="badge badge-primary" style="margin-left:auto;align-self:center">' + escHtml(org.plan || 'free') + '</span></a>';
       }).join('');
     } catch (err) {
       el.innerHTML = '<p style="color:var(--error)">Failed to load organizations.</p>';
@@ -99,12 +100,12 @@
       list.innerHTML = invitations.map(function (inv) {
         return '<div class="card invitation-card">' +
           '<div class="invitation-info">' +
-          '<div style="font-size:15px;font-weight:600">' + escapeHtml(inv.organizationName) + '</div>' +
-          '<div style="font-size:13px;color:var(--text-muted)">Role: ' + inv.role + ' · Invited ' + new Date(inv.invitedAt).toLocaleDateString() + '</div>' +
+          '<div style="font-size:15px;font-weight:600">' + escHtml(inv.organizationName) + '</div>' +
+          '<div style="font-size:13px;color:var(--text-muted)">Role: ' + escHtml(inv.role) + ' · Invited ' + new Date(inv.invitedAt).toLocaleDateString() + '</div>' +
           '</div>' +
           '<div class="invitation-actions">' +
-          '<button class="btn btn-primary accept-invite" data-org-id="' + inv.organizationId + '" style="padding:8px 16px;font-size:13px">Accept</button>' +
-          '<button class="btn btn-ghost reject-invite" data-org-id="' + inv.organizationId + '" style="padding:8px 16px;font-size:13px;color:var(--error)">Decline</button>' +
+          '<button class="btn btn-primary accept-invite" data-org-id="' + escHtml(inv.organizationId) + '" style="padding:8px 16px;font-size:13px">Accept</button>' +
+          '<button class="btn btn-ghost reject-invite" data-org-id="' + escHtml(inv.organizationId) + '" style="padding:8px 16px;font-size:13px;color:var(--error)">Decline</button>' +
           '</div>' +
           '</div>';
       }).join('');
@@ -140,9 +141,23 @@
     }
   }
 
-  function escapeHtml(str) {
-    var div = document.createElement('div');
-    div.appendChild(document.createTextNode(str));
-    return div.innerHTML;
+  function escHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var cancelBtn = document.getElementById('cancelCreateOrg');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function () {
+        var modal = document.getElementById('createOrgModal');
+        if (modal) modal.classList.remove('open');
+      });
+    }
+  });
 })();

@@ -23,17 +23,17 @@
 
         if (isPopular) html += '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:4px 16px;border-radius:100px;font-size:13px;font-weight:600">Most Popular</div>';
 
-        html += '<h3 style="font-size:20px;margin-bottom:4px">' + plan.name + '</h3>';
+        html += '<h3 style="font-size:20px;margin-bottom:4px">' + escHtml(plan.name) + '</h3>';
 
         if (plan.price === 0) {
           html += '<div style="font-size:40px;font-weight:700;margin:16px 0 8px">$0<span style="font-size:16px;font-weight:400;color:var(--text-muted)">/month</span></div>';
         } else {
-          html += '<div style="font-size:40px;font-weight:700;margin:16px 0 8px">$' + plan.price + '<span style="font-size:16px;font-weight:400;color:var(--text-muted)">/mo</span></div>';
+          html += '<div style="font-size:40px;font-weight:700;margin:16px 0 8px">$' + escHtml(plan.price) + '<span style="font-size:16px;font-weight:400;color:var(--text-muted)">/mo</span></div>';
         }
 
         html += '<ul style="list-style:none;padding:0;margin:16px 0 24px;flex:1;display:flex;flex-direction:column;gap:10px">';
         (plan.features || []).forEach(function (f) {
-          html += '<li style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>' + f + '</li>';
+          html += '<li style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>' + escHtml(f) + '</li>';
         });
         html += '</ul>';
 
@@ -44,14 +44,14 @@
         } else if (!hasKoFi) {
           html += '<button class="btn btn-primary" style="width:100%" disabled>Coming soon</button>';
         } else {
-          html += '<a href="' + plan.kofiUrl + '" target="_blank" class="btn btn-primary" style="width:100%;text-align:center;text-decoration:none">Subscribe on Ko-fi</a>';
+          html += '<a href="' + escHtml(safeHttpUrl(plan.kofiUrl)) + '" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;text-align:center;text-decoration:none">Subscribe on Ko-fi</a>';
         }
 
         html += '</div>';
         return html;
       }).join('\n');
     } catch (err) {
-      grid.innerHTML = '<div class="card" style="grid-column:1/-1;padding:60px;text-align:center"><p style="color:var(--text-secondary)">Could not load plans. ' + (err.message || '') + '</p></div>';
+      grid.innerHTML = '<div class="card" style="grid-column:1/-1;padding:60px;text-align:center"><p style="color:var(--text-secondary)">Could not load plans. ' + escHtml(err.message || '') + '</p></div>';
     }
   }
 
@@ -68,5 +68,23 @@
     if (role === 'pro') return 'pro';
     if (role === 'team_admin') return 'team';
     return 'free';
+  }
+
+  function escHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeHttpUrl(url) {
+    try {
+      var parsed = new URL(url);
+      if (parsed.protocol === 'https:' || parsed.protocol === 'http:') return parsed.href;
+    } catch (e) {}
+    return '';
   }
 })();

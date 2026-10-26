@@ -24,6 +24,10 @@
     if (importBtn) {
       importBtn.addEventListener('click', openImportModal);
     }
+    var emptyImportBtn = document.getElementById('emptyImportBtn');
+    if (emptyImportBtn && importBtn) {
+      emptyImportBtn.addEventListener('click', function () { importBtn.click(); });
+    }
 
     var closeModal = document.getElementById('closeImportModal');
     if (closeModal) {
@@ -104,17 +108,17 @@
       list.innerHTML = repos.map(function (repo) {
         var lang = repo.language || '?';
         return [
-          '<a href="/lumora/repository.html?id=' + repo._id + '" class="repo-card card">',
-          '<div class="repo-icon">' + lang.charAt(0).toUpperCase() + '</div>',
+          '<a href="/lumora/repository.html?id=' + encodeURIComponent(repo._id || '') + '" class="repo-card card">',
+          '<div class="repo-icon">' + escapeHtml(lang.charAt(0).toUpperCase()) + '</div>',
           '<div class="repo-info">',
-          '<div class="repo-name">' + (repo.fullName || repo.name) + '</div>',
-          '<div class="repo-description">' + (repo.description || 'No description') + '</div>',
+          '<div class="repo-name">' + escapeHtml(repo.fullName || repo.name) + '</div>',
+          '<div class="repo-description">' + escapeHtml(repo.description || 'No description') + '</div>',
           '</div>',
           '<div class="repo-meta">',
-          '<span>' + lang + '</span>',
-          '<span>' + (repo.filesCount || 0) + ' files</span>',
+          '<span>' + escapeHtml(lang) + '</span>',
+          '<span>' + escapeHtml(repo.filesCount || 0) + ' files</span>',
           '<div class="repo-status">',
-          '<span class="status-dot ' + repo.analysisStatus + '"></span> ' + repo.analysisStatus,
+          '<span class="status-dot ' + escapeHtml(repo.analysisStatus) + '"></span> ' + escapeHtml(repo.analysisStatus),
           '</div>',
           '</div>',
           '</a>'
@@ -296,7 +300,7 @@
     if (notifList) {
       var item = document.createElement('div');
       item.className = 'notification-item unread';
-      item.innerHTML = '<div><div class="notification-item-title">' + title + '</div>' + (message ? '<div class="notification-item-desc" style="font-size:12px;color:var(--text-muted);margin-top:2px">' + message + '</div>' : '') + '<div class="notification-item-time">Just now</div></div>';
+      item.innerHTML = '<div><div class="notification-item-title">' + escapeHtml(title) + '</div>' + (message ? '<div class="notification-item-desc" style="font-size:12px;color:var(--text-muted);margin-top:2px">' + escapeHtml(message) + '</div>' : '') + '<div class="notification-item-time">Just now</div></div>';
       notifList.insertBefore(item, notifList.firstChild);
     }
   }

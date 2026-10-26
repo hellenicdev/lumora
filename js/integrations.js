@@ -59,8 +59,8 @@
         '</div>' +
         '<div class="actions">' +
           '<span style="font-size:0.8rem;color:' + statusColor + '">● ' + statusText + '</span>' +
-          '<button class="btn btn-ghost integration-test-btn" data-id="' + integration._id + '" style="font-size:0.85rem;padding:0.3rem 0.7rem">Test</button>' +
-          '<button class="btn btn-ghost integration-delete-btn" data-id="' + integration._id + '" style="font-size:0.85rem;padding:0.3rem 0.7rem;color:var(--color-danger)">Delete</button>' +
+          '<button class="btn btn-ghost integration-test-btn" data-id="' + escHtml(integration._id) + '" style="font-size:0.85rem;padding:0.3rem 0.7rem">Test</button>' +
+          '<button class="btn btn-ghost integration-delete-btn" data-id="' + escHtml(integration._id) + '" style="font-size:0.85rem;padding:0.3rem 0.7rem;color:var(--color-danger)">Delete</button>' +
         '</div>' +
       '</div>';
     });

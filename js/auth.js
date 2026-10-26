@@ -35,10 +35,21 @@
     var forgotForm = document.getElementById('forgotForm');
     if (forgotForm) forgotForm.addEventListener('submit', handleForgotPassword);
 
+    var githubBtn = document.getElementById('githubLoginBtn') || document.getElementById('githubRegisterBtn');
+    if (githubBtn) {
+      githubBtn.addEventListener('click', function () {
+        window.location.href = API_BASE + '/github/login';
+      });
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('github') === 'error' && typeof showToast === 'function') {
+      showToast(params.get('msg') ? 'GitHub sign in failed: ' + params.get('msg') : 'GitHub sign in failed', 'error');
+    }
+
     var resetForm = document.getElementById('resetForm');
     if (resetForm) {
       var tokenInput = document.getElementById('token');
-      var params = new URLSearchParams(window.location.search);
       var rawToken = params.get('token') || '';
       try {
         rawToken = decodeURIComponent(rawToken);

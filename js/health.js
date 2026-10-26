@@ -72,9 +72,9 @@
         if (val.largeFiles !== undefined) details.push(val.largeFiles + ' large');
         if (val.avgDepth !== undefined) details.push('depth ' + val.avgDepth);
         return '<div class="health-category card">' +
-          '<h3>' + (labels[key] || key) + '</h3>' +
-          '<div class="score ' + scoreClass + '">' + val.score + '/100</div>' +
-          (details.length ? '<p style="font-size:12px;color:var(--text-muted);margin-top:6px">' + details.join(' · ') + '</p>' : '') +
+          '<h3>' + escHtml(labels[key] || key) + '</h3>' +
+          '<div class="score ' + scoreClass + '">' + escHtml(val.score) + '/100</div>' +
+          (details.length ? '<p style="font-size:12px;color:var(--text-muted);margin-top:6px">' + escHtml(details.join(' · ')) + '</p>' : '') +
           '</div>';
       }).join('');
 
@@ -134,22 +134,22 @@
           ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align:middle;margin-right:2px"><path d="M12 2a4 4 0 014 4c0 2-2 4-2 6h-4c0-2-2-4-2-6a4 4 0 014-4z"/><path d="M8 14h8v2a4 4 0 01-8 0v-2z"/></svg>'
           : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="vertical-align:middle;margin-right:2px"><polyline points="20 6 9 17 4 12"/></svg>';
         const confidenceColor = inc.confidence === 'high' ? 'var(--success)' : inc.confidence === 'medium' ? 'var(--warning)' : 'var(--text-muted)';
-        const confidenceBadge = '<span style="font-size:11px;color:' + confidenceColor + ';font-weight:600;margin-right:8px">' + sourceIcon + sourceLabel + ' · ' + inc.confidence + ' confidence</span>';
+        const confidenceBadge = '<span style="font-size:11px;color:' + confidenceColor + ';font-weight:600;margin-right:8px">' + sourceIcon + sourceLabel + ' · ' + escHtml(inc.confidence) + ' confidence</span>';
 
         return '<div class="incident-item card" style="flex-direction:column;padding:12px 14px">' +
           '<div style="display:flex;align-items:center;gap:12px;width:100%">' +
-          '<span class="incident-severity ' + severity + '"></span>' +
-          '<span style="flex:1;font-size:13px"><strong>' + inc.type + '</strong> in ' + inc.file + ':' + inc.line + '</span>' +
-          '<span style="font-size:12px;color:var(--text-muted);font-family:monospace">' + (inc.maskedValue || '') + '</span>' +
+          '<span class="incident-severity ' + escHtml(severity) + '"></span>' +
+          '<span style="flex:1;font-size:13px"><strong>' + escHtml(inc.type) + '</strong> in ' + escHtml(inc.file) + ':' + escHtml(inc.line) + '</span>' +
+          '<span style="font-size:12px;color:var(--text-muted);font-family:monospace">' + escHtml(inc.maskedValue || '') + '</span>' +
           (inc.status === 'open'
-            ? '<button class="btn btn-ghost resolve-btn" data-id="' + inc._id + '" style="font-size:12px;padding:4px 10px;color:var(--success)">Resolve</button>' +
-              '<button class="btn btn-ghost dismiss-btn" data-id="' + inc._id + '" style="font-size:12px;padding:4px 10px;color:var(--text-muted)">Dismiss</button>'
+            ? '<button class="btn btn-ghost resolve-btn" data-id="' + escHtml(inc._id) + '" style="font-size:12px;padding:4px 10px;color:var(--success)">Resolve</button>' +
+              '<button class="btn btn-ghost dismiss-btn" data-id="' + escHtml(inc._id) + '" style="font-size:12px;padding:4px 10px;color:var(--text-muted)">Dismiss</button>'
             : '<span class="badge badge-success">Resolved</span>') +
           '</div>' +
           '<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding-left:20px">' +
           confidenceBadge +
           '</div>' +
-          (inc.explanation ? '<div style="font-size:12px;color:var(--text-secondary);margin-top:4px;padding-left:20px;line-height:1.4">' + inc.explanation + '</div>' : '') +
+          (inc.explanation ? '<div style="font-size:12px;color:var(--text-secondary);margin-top:4px;padding-left:20px;line-height:1.4">' + escHtml(inc.explanation) + '</div>' : '') +
           '</div>';
       }).join('') + '</div>';
   }
@@ -196,5 +196,15 @@
       btn.disabled = false;
       btn.textContent = 'Run Security Scan';
     }
+  }
+
+  function escHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 })();

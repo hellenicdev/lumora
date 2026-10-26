@@ -20,6 +20,7 @@ import Repository from '../models/Repository.js';
 import SecurityIncident from '../models/SecurityIncident.js';
 import { getUsage, PLAN_LIMITS } from '../services/usageService.js';
 import { getPlan } from '../middlewares/usage.js';
+import { authCookieOptions } from '../utils/cookies.js';
 
 export async function register(req, res) {
   try {
@@ -36,13 +37,7 @@ export async function register(req, res) {
 
     logger.info('User registered', { email });
 
-    const isProd = config.nodeEnv === 'production';
-    const cookieBase = {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      path: '/',
-    };
+    const cookieBase = authCookieOptions();
     res.cookie('lumora_access_token', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('lumora_refresh_token', refreshTokenStr, { ...cookieBase, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
@@ -67,13 +62,7 @@ export async function login(req, res) {
     const refreshTokenStr = authService.generateRefreshToken();
     await authService.createRefreshTokenDocument(user._id, refreshTokenStr, rememberMe);
 
-    const isProd = config.nodeEnv === 'production';
-    const cookieBase = {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      path: '/',
-    };
+    const cookieBase = authCookieOptions();
     const refreshMaxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
     res.cookie('lumora_access_token', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('lumora_refresh_token', refreshTokenStr, { ...cookieBase, maxAge: refreshMaxAge });
@@ -101,13 +90,7 @@ export async function refresh(req, res) {
 
     const result = await authService.refreshAccessToken(refreshToken);
 
-    const isProd = config.nodeEnv === 'production';
-    const cookieBase = {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      path: '/',
-    };
+    const cookieBase = authCookieOptions();
     const refreshMaxAge = result.rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
     res.cookie('lumora_access_token', result.accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('lumora_refresh_token', result.refreshToken, { ...cookieBase, maxAge: refreshMaxAge });
@@ -123,13 +106,7 @@ export async function logout(req, res) {
     if (refreshToken) {
       await authService.logoutUser(refreshToken);
     }
-    const isProd = config.nodeEnv === 'production';
-    const cookieBase = {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      path: '/',
-    };
+    const cookieBase = authCookieOptions();
     res.clearCookie('lumora_access_token', cookieBase);
     res.clearCookie('lumora_refresh_token', cookieBase);
     return success(res, null, 'Logged out successfully');
@@ -141,8 +118,7 @@ export async function logout(req, res) {
 export async function logoutEverywhere(req, res) {
   try {
     await authService.logoutEverywhere(req.user._id);
-    const isProd = config.nodeEnv === 'production';
-    const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax', path: '/' };
+    const cookieBase = authCookieOptions();
     res.clearCookie('lumora_access_token', cookieBase);
     res.clearCookie('lumora_refresh_token', cookieBase);
     return success(res, null, 'Logged out everywhere');
@@ -213,8 +189,7 @@ export async function changePassword(req, res) {
     req.user.password = newPassword;
     await req.user.save();
     await authService.logoutEverywhere(req.user._id);
-    const isProd = config.nodeEnv === 'production';
-    const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax', path: '/' };
+    const cookieBase = authCookieOptions();
     res.clearCookie('lumora_access_token', cookieBase);
     res.clearCookie('lumora_refresh_token', cookieBase);
     return success(res, null, 'Password changed. Please login again.');

@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto';
 import config from '../config/index.js';
 
 export function getPlans() {
@@ -48,8 +49,37 @@ export function getPlans() {
   ];
 }
 
+export function normalizeWebhookBody(body) {
+  const source = body && typeof body === 'object' ? body : {};
+  let data = source.data;
+  if (typeof data === 'string') {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      data = {};
+    }
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) data = {};
+  return {
+    ...source,
+    data,
+    type: source.type || source.event || data.type || '',
+    verification_token: data.verification_token || source.verification_token || '',
+  };
+}
+
 export function verifyWebhook(body) {
-  if (!config.kofi.webhookToken) return true;
-  const token = body.data?.verification_token || body.verification_token;
-  return token === config.kofi.webhookToken;
+  const expected = config.kofi.webhookToken;
+  if (!expected) return false;
+
+  const normalized = normalizeWebhookBody(body);
+  const provided = String(normalized.verification_token || '');
+
+  const expectedBuf = Buffer.from(expected);
+  const providedBuf = Buffer.from(provided);
+  if (expectedBuf.length !== providedBuf.length) {
+    timingSafeEqual(expectedBuf, expectedBuf);
+    return false;
+  }
+  return timingSafeEqual(expectedBuf, providedBuf);
 }

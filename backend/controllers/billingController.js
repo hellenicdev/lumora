@@ -23,7 +23,7 @@ export async function getSubscription(req, res) {
 }
 
 export async function webhook(req, res) {
-  const body = req.body;
+  const body = kofi.normalizeWebhookBody(req.body);
 
   if (!kofi.verifyWebhook(body)) {
     logger.warn('Ko-fi webhook verification failed');
@@ -33,7 +33,7 @@ export async function webhook(req, res) {
   const data = body.data || {};
   const email = data.email;
   const tierName = data.tier_name || '';
-  const type = body.type || body.event || '';
+  const type = body.type || '';
 
   logger.info('Ko-fi webhook received', { type, tier: tierName, email });
 

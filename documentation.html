@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://cdn.socket.io https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com https://hellenicdev.eu; font-src 'self' data:; connect-src 'self' https://lumora-9sb3.onrender.com wss://lumora-9sb3.onrender.com http://localhost:3070 ws://localhost:3070 http://127.0.0.1:3070 ws://127.0.0.1:3070 https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="canonical" href="https://hellenicdev.eu/lumora/documentation.html">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="alternate icon" href="./favicon.ico">
   <title>Documentation — Lumora</title>
@@ -10,13 +12,13 @@
   <meta property="og:title" content="Documentation — Lumora">
   <meta property="og:description" content="View and manage auto-generated documentation for your repositories on Lumora.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://hellenicdev.eu/lumora/">
+  <meta property="og:url" content="https://hellenicdev.eu/lumora/documentation.html">
   <link rel="stylesheet" href="./css/main.css">
   <link rel="stylesheet" href="./css/dashboard.css">
   <link rel="stylesheet" href="./css/documentation.css">
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-9FWQFZME3Z"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9FWQFZME3Z');</script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" defer></script>
+
+  <script src="./js/analytics.js" defer></script>
 </head>
 <body class="dashboard">
   <aside class="sidebar" id="sidebar">
@@ -116,11 +118,11 @@
     </div>
   </div>
 
-  <script src="./js/theme.js"></script>
-  <script src="./js/config.js"></script>
-  <script src="./js/api.js"></script>
-  <script src="./js/dashboard.js"></script>
-  <script src="./js/documentation.js"></script>
+  <script src="./js/theme.js" defer></script>
+  <script src="./js/config.js" defer></script>
+  <script src="./js/api.js" defer></script>
+  <script src="./js/dashboard.js" defer></script>
+  <script src="./js/documentation.js" defer></script>
 <div class="cookie-consent" id="cookieConsent">
   <p>We use cookies to improve your experience. <a href="./privacy.html">Learn more</a></p>
   <div class="cookie-buttons">
@@ -128,6 +130,6 @@
     <button class="btn btn-primary" id="cookieAccept">Accept</button>
   </div>
 </div>
-<script src="./js/cookie-consent.js"></script>
+<script src="./js/cookie-consent.js" defer></script>
 </body>
 </html>

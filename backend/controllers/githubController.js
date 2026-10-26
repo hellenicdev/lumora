@@ -6,6 +6,7 @@ import * as authService from '../services/authService.js';
 import { storeGitHubToken, storeGitHubPat, validatePat } from '../github/client.js';
 import { success, error } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
+import { authCookieOptions } from '../utils/cookies.js';
 
 const pendingStates = new Map();
 
@@ -98,13 +99,7 @@ export async function callback(req, res) {
     const refreshTokenStr = authService.generateRefreshToken();
     await authService.createRefreshTokenDocument(user._id, refreshTokenStr, true);
 
-    const isProd = config.nodeEnv === 'production';
-    const cookieBase = {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
-      path: '/',
-    };
+    const cookieBase = authCookieOptions();
     res.cookie('lumora_access_token', jwtToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('lumora_refresh_token', refreshTokenStr, { ...cookieBase, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
