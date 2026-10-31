@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import config from '../config/index.js';
+import config, { isAllowedOrigin } from '../config/index.js';
 import { logger } from '../utils/logger.js';
 
 let io = null;
@@ -10,12 +10,7 @@ export function initializeSocket(httpServer) {
     cors: {
       origin: (origin, cb) => {
         if (!origin) return cb(null, true);
-        try {
-          const allowed = new URL(config.frontendUrl).origin;
-          cb(null, origin === allowed);
-        } catch {
-          cb(null, false);
-        }
+        cb(null, isAllowedOrigin(origin));
       },
       methods: ['GET', 'POST'],
       credentials: true,

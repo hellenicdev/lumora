@@ -5,15 +5,38 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: resolve(__dirname, '..', '.env') });
 
+function requiredEnv(name) {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
+  return value;
+}
+
+function parseAllowedOrigins() {
+  const raw = process.env.ALLOWED_ORIGINS || 'https://hellenicdev.eu';
+  const origins = new Set(raw.split(',').map((item) => item.trim()).filter(Boolean));
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (frontendUrl) {
+    try {
+      origins.add(new URL(frontendUrl).origin);
+    } catch {
+      throw new Error('FRONTEND_URL must be an absolute URL');
+    }
+  }
+  return [...origins];
+}
+
 const config = {
   port: parseInt(process.env.PORT, 10) || 3070,
   nodeEnv: process.env.NODE_ENV || 'development',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3060',
+  allowedOrigins: parseAllowedOrigins(),
   mongodbUri: process.env.MONGODB_URI,
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-jwt-secret',
+    secret: requiredEnv('JWT_SECRET'),
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret',
+    refreshSecret: requiredEnv('JWT_REFRESH_SECRET'),
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
   turnstile: {
@@ -42,16 +65,20 @@ const config = {
   },
   kofi: {
     pageUrl: process.env.KOFI_PAGE_URL,
-    webhookToken: process.env.KOFI_WEBHOOK_TOKEN,
+    webhookToken: requiredEnv('KOFI_WEBHOOK_TOKEN'),
   },
 };
 
-if (config.nodeEnv === 'production') {
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET is required in production');
-  }
-  if (!process.env.JWT_REFRESH_SECRET) {
-    throw new Error('JWT_REFRESH_SECRET is required in production');
+export function isAllowedOrigin(origin) {
+  if (!origin || origin === 'null') return false;
+  if (config.allowedOrigins.includes(origin)) return true;
+  if (config.nodeEnv === 'production') return false;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname;
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  } catch {
+    return false;
   }
 }
 

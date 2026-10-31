@@ -121,7 +121,7 @@
 
       var githubLink = getEl('githubLink');
       if (githubLink && repoData.fullName) {
-        githubLink.href = 'https://github.com/' + repoData.fullName;
+        githubLink.href = 'https://github.com/' + String(repoData.fullName).split('/').map(encodeURIComponent).join('/');
       }
 
       var repoLoading = getEl('repoLoading');
@@ -139,7 +139,7 @@
       loadFiles();
     } catch (err) {
       var repoLoading = getEl('repoLoading');
-      if (repoLoading) repoLoading.innerHTML = '<p style="color:var(--error)">Failed to load repository: ' + err.message + '</p>';
+      if (repoLoading) repoLoading.innerHTML = '<p style="color:var(--error)">Failed to load repository: ' + escapeHtml(err.message) + '</p>';
     }
   }
 
@@ -148,10 +148,10 @@
     if (!el) return;
     el.innerHTML = `
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
-        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Language</h3><p style="font-size:18px;font-weight:600">${repoData.language || '—'}</p></div>
-        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Files</h3><p style="font-size:18px;font-weight:600">${repoData.filesCount || 0}</p></div>
-        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Status</h3><p style="font-size:18px;font-weight:600">${repoData.analysisStatus}</p></div>
-        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Branch</h3><p style="font-size:18px;font-weight:600">${repoData.defaultBranch || 'main'}</p></div>
+        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Language</h3><p style="font-size:18px;font-weight:600">${escapeHtml(repoData.language || '—')}</p></div>
+        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Files</h3><p style="font-size:18px;font-weight:600">${escapeHtml(repoData.filesCount || 0)}</p></div>
+        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Status</h3><p style="font-size:18px;font-weight:600">${escapeHtml(repoData.analysisStatus)}</p></div>
+        <div class="card"><h3 style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Branch</h3><p style="font-size:18px;font-weight:600">${escapeHtml(repoData.defaultBranch || 'main')}</p></div>
       </div>
       <div id="overviewPersonality" style="margin-top:16px"></div>
       <div class="card" style="margin-top:16px">
@@ -174,7 +174,7 @@
       container.innerHTML = '<div class="card" style="padding:16px 20px">' +
         '<div style="display:flex;align-items:flex-start;gap:10px">' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
-        '<div style="font-size:13px;line-height:1.5;color:var(--text-secondary)">' + personality.personality + '</div>' +
+        '<div style="font-size:13px;line-height:1.5;color:var(--text-secondary)">' + escapeHtml(personality.personality) + '</div>' +
         '</div></div>';
     } catch {}
   }
@@ -247,7 +247,7 @@
     sortedDirs.forEach(function (dirName) {
       html += '<div class="file-tree-item">';
       html += '<span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></span>';
-      html += dirName + '/</div>';
+      html += escapeHtml(dirName) + '/</div>';
     });
 
     files.sort(function (a, b) { return a.path.localeCompare(b.path); });
@@ -335,9 +335,9 @@
         routes.map(function (r) {
           const methodColors = { GET: 'badge-success', POST: 'badge-primary', PUT: 'badge-warning', PATCH: 'badge-warning', DELETE: 'badge-error' };
           return '<div class="card" style="display:flex;align-items:center;gap:12px;padding:12px 16px">' +
-            '<span class="badge ' + (methodColors[r.method] || 'badge-primary') + '">' + r.method + '</span>' +
-            '<code style="flex:1;font-size:14px;color:var(--text-primary)">' + r.path + '</code>' +
-            '<span style="font-size:13px;color:var(--text-muted)">' + (r.file || '') + '</span>' +
+            '<span class="badge ' + (methodColors[r.method] || 'badge-primary') + '">' + escapeHtml(r.method) + '</span>' +
+            '<code style="flex:1;font-size:14px;color:var(--text-primary)">' + escapeHtml(r.path) + '</code>' +
+            '<span style="font-size:13px;color:var(--text-muted)">' + escapeHtml(r.file || '') + '</span>' +
             '</div>';
         }).join('') + '</div>';
     } catch (err) {
@@ -362,9 +362,9 @@
       el.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px">' +
         deps.map(function (d) {
           return '<div class="card" style="display:flex;align-items:center;gap:12px;padding:12px 16px">' +
-            '<span style="flex:1;font-size:14px;font-weight:500">' + d.name + '</span>' +
-            '<span style="font-size:13px;color:var(--text-muted)">' + (d.version || '—') + '</span>' +
-            '<span class="badge ' + (d.type === 'production' ? 'badge-primary' : 'badge-warning') + '">' + d.type + '</span>' +
+            '<span style="flex:1;font-size:14px;font-weight:500">' + escapeHtml(d.name) + '</span>' +
+            '<span style="font-size:13px;color:var(--text-muted)">' + escapeHtml(d.version || '—') + '</span>' +
+            '<span class="badge ' + (d.type === 'production' ? 'badge-primary' : 'badge-warning') + '">' + escapeHtml(d.type) + '</span>' +
             '</div>';
         }).join('') + '</div>';
     } catch (err) {
@@ -495,7 +495,7 @@
       } catch (e) {
       }
     } catch (err) {
-      container.innerHTML = '<p style="color:var(--error)">Failed to load graph: ' + err.message + '</p>';
+      container.innerHTML = '<p style="color:var(--error)">Failed to load graph: ' + escapeHtml(err.message) + '</p>';
     }
   }
 

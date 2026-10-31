@@ -16,7 +16,14 @@
     var el = document.createElement('div');
     var bg = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#6366f1';
     el.style.cssText = 'padding:12px 20px;border-radius:8px;background:' + bg + ';color:#fff;font-size:14px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,0.3);animation:slideIn 0.3s ease;cursor:pointer;display:flex;align-items:center;gap:10px;line-height:1.4';
-    el.innerHTML = '<span style="flex:1">' + message + '</span><span style="opacity:0.7;font-size:16px">&times;</span>';
+    var text = document.createElement('span');
+    text.style.flex = '1';
+    text.textContent = message == null ? '' : String(message);
+    var close = document.createElement('span');
+    close.style.cssText = 'opacity:0.7;font-size:16px';
+    close.textContent = '\u00d7';
+    el.appendChild(text);
+    el.appendChild(close);
     el.addEventListener('click', function () {
       el.style.animation = 'slideOut 0.3s ease';
       setTimeout(function () { el.remove(); }, 300);

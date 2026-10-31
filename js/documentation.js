@@ -166,7 +166,7 @@
     el.innerHTML = '<div style="display:flex;align-items:flex-start;gap:12px">' +
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" style="flex-shrink:0;margin-top:2px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
       '<div><strong style="font-size:14px">Documentation may be outdated</strong>' +
-      '<p style="font-size:13px;color:var(--text-secondary);margin-top:4px">' + (drift.issues || []).map(function (i) { return i.message; }).join('<br>') + '</p></div></div>';
+      '<p style="font-size:13px;color:var(--text-secondary);margin-top:4px">' + (drift.issues || []).map(function (i) { return escHtml(i.message); }).join('<br>') + '</p></div></div>';
   }
 
   async function viewDoc(type) {
@@ -270,9 +270,19 @@
     }
   }
 
+  function escHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function renderMarkdown(md) {
     if (!md) return '<p style="color:var(--text-muted)">No content.</p>';
-    var html = md;
+    var html = escHtml(md);
 
     html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
     html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');

@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import config from './config/index.js';
+import config, { isAllowedOrigin } from './config/index.js';
 import { connectDatabase } from './database/index.js';
 import { logger } from './utils/logger.js';
 import { initializeSocket } from './socket/index.js';
@@ -15,28 +15,24 @@ import { ensureIndexes } from './config/indexes.js';
 import { getQueue } from './jobs/queue.js';
 import { processImport } from './services/importService.js';
 import routes from './routes/index.js';
+import { requireAllowedOrigin } from './middlewares/csrf.js';
 
 const app = express();
 app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 app.use(helmet());
-const corsOrigin = config.nodeEnv === 'development'
-  ? true
-  : (origin, cb) => {
-      if (!origin) return cb(null, true);
-      try {
-        const allowed = new URL(config.frontendUrl).origin;
-        cb(null, origin === allowed);
-      } catch {
-        cb(null, false);
-      }
-    };
+const corsOrigin = (origin, cb) => {
+  if (!origin) return cb(null, true);
+  cb(null, isAllowedOrigin(origin));
+};
 
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 app.use(cookieParser());
+app.use(requireAllowedOrigin);
 
 app.use('/api', (req, res, next) => {
   res.set('Cache-Control', 'no-store');

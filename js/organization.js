@@ -100,7 +100,7 @@
         }
       }
     } catch (err) {
-      orgLoading.innerHTML = '<p style="color:var(--error)">Failed to load organization: ' + err.message + '</p>';
+      orgLoading.innerHTML = '<p style="color:var(--error)">Failed to load organization: ' + escHtml(err.message) + '</p>';
     }
   }
 
@@ -119,13 +119,13 @@
       const userEmail = user.email || '—';
       const isOwner = m.role === 'owner';
       return '<div class="member-row card">' +
-        '<div class="member-avatar">' + userName.charAt(0).toUpperCase() + '</div>' +
+        '<div class="member-avatar">' + escHtml(userName.charAt(0).toUpperCase()) + '</div>' +
         '<div class="member-info">' +
-        '<div class="member-name">' + userName + '</div>' +
-        '<div class="member-email">' + userEmail + '</div>' +
+        '<div class="member-name">' + escHtml(userName) + '</div>' +
+        '<div class="member-email">' + escHtml(userEmail) + '</div>' +
         '</div>' +
-        '<span class="badge badge-' + (isOwner ? 'primary' : m.role === 'admin' ? 'warning' : 'default') + '">' + (m.role || 'member') + '</span>' +
-        (!isOwner ? '<button class="btn btn-ghost" style="color:var(--error);padding:4px 8px;font-size:13px" data-user-id="' + userId + '">Remove</button>' : '') +
+        '<span class="badge badge-' + (isOwner ? 'primary' : m.role === 'admin' ? 'warning' : 'default') + '">' + escHtml(m.role || 'member') + '</span>' +
+        (!isOwner ? '<button class="btn btn-ghost" style="color:var(--error);padding:4px 8px;font-size:13px" data-user-id="' + escHtml(userId) + '">Remove</button>' : '') +
         '</div>';
     }).join('');
 
@@ -142,5 +142,15 @@
         }
       });
     });
+  }
+
+  function escHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 })();

@@ -82,8 +82,8 @@
       }
 
       list.innerHTML = sessions.map(function (s) {
-        return '<div class="chat-session-item' + (s._id === currentSessionId ? ' active' : '') + '" data-id="' + s._id + '">' +
-          '<div class="chat-session-item-title">' + (s.title || 'New Chat') + '</div>' +
+        return '<div class="chat-session-item' + (s._id === currentSessionId ? ' active' : '') + '" data-id="' + escapeHtml(s._id) + '">' +
+          '<div class="chat-session-item-title">' + escapeHtml(s.title || 'New Chat') + '</div>' +
           '<div class="chat-session-item-meta">' + new Date(s.updatedAt || s.createdAt).toLocaleDateString() + '</div>' +
           '</div>';
       }).join('');
@@ -241,7 +241,7 @@
     } catch (err) {
       const el = document.getElementById(typingId);
       if (el) {
-        el.querySelector('.chat-message-content').innerHTML = '<p style="color:var(--error)">Error: ' + err.message + '</p>';
+        el.querySelector('.chat-message-content').innerHTML = '<p style="color:var(--error)">Error: ' + escapeHtml(err.message) + '</p>';
       }
     } finally {
       isStreaming = false;
@@ -254,7 +254,7 @@
     const content = escapeHtml(msg.content);
     const sources = msg.sources && msg.sources.length > 0
       ? '<div class="chat-sources">' + msg.sources.map(function (s) {
-          return '<span class="chat-source">' + s.file + '</span>';
+          return '<span class="chat-source">' + escapeHtml(s.file) + '</span>';
         }).join('') + '</div>'
       : '';
 
@@ -283,6 +283,7 @@
   }
 
   function escapeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (str == null) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 })();

@@ -149,12 +149,12 @@
       }).slice(0, 8);
 
       if (matches.length === 0) {
-        dropdown.innerHTML = '<div class="search-dropdown-empty">No repositories match "' + q + '"</div>';
+        dropdown.innerHTML = '<div class="search-dropdown-empty">No repositories match "' + escHtml(q) + '"</div>';
       } else {
         dropdown.innerHTML = matches.map(function (r) {
-          return '<a href="/lumora/repository.html?id=' + r._id + '" class="search-dropdown-item">' +
-            '<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (r.fullName || r.name) + '</span>' +
-            '<span class="repo-lang">' + (r.language || '?') + '</span></a>';
+          return '<a href="/lumora/repository.html?id=' + encodeURIComponent(r._id || '') + '" class="search-dropdown-item">' +
+            '<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(r.fullName || r.name) + '</span>' +
+            '<span class="repo-lang">' + escHtml(r.language || '?') + '</span></a>';
         }).join('');
       }
       dropdown.classList.add('open');
@@ -258,7 +258,7 @@
       '    <div style="display:flex;flex-direction:column;gap:12px">',
       '      <div><label style="font-size:13px;color:var(--text-muted)">Name</label><div style="font-size:15px;font-weight:500" id="settingsName"></div></div>',
       '      <div><label style="font-size:13px;color:var(--text-muted)">Email</label><div style="font-size:15px;font-weight:500" id="settingsEmail"></div></div>',
-      '      <div><label style="font-size:13px;color:var(--text-muted)">Plan</label><div><span class="badge ' + planBadgeClass + '" id="settingsPlan">' + planLabel + '</span></div></div>',
+      '      <div><label style="font-size:13px;color:var(--text-muted)">Plan</label><div><span class="badge ' + planBadgeClass + '" id="settingsPlan">' + escHtml(planLabel) + '</span></div></div>',
       '    </div>',
       '  </div>',
 
@@ -273,7 +273,7 @@
 
       '  <div class="card">',
       '    <h3 style="margin-bottom:16px">Plan & Billing</h3>',
-      '    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">You\'re currently on the <strong>' + planLabel + '</strong> plan.</p>',
+      '    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">You\'re currently on the <strong>' + escHtml(planLabel) + '</strong> plan.</p>',
       '    <a href="/lumora/upgrade.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex">' + (currentUser && (currentUser.role === 'pro' || currentUser.role === 'team_admin' || currentUser.role === 'system_admin') ? 'Manage Plan' : 'Upgrade Plan') + '</a>',
       '  </div>',
 
@@ -399,7 +399,7 @@
 
         currentUser = data.data.user;
         var planName = code === 'TEAMWORKISFUN' ? 'Team' : 'Pro';
-        msg.innerHTML = '<span style="color:var(--success)">' + (data.message || planName + ' plan activated successfully!') + '</span>';
+        msg.innerHTML = '<span style="color:var(--success)">' + escHtml(data.message || planName + ' plan activated successfully!') + '</span>';
 
         var planEl = document.getElementById('settingsPlan');
         if (planEl) {
@@ -410,7 +410,7 @@
         var activationCard = document.getElementById('activationCard');
         if (activationCard) activationCard.style.display = 'none';
       } catch (err) {
-        msg.innerHTML = '<span style="color:var(--error)">' + (err.message || 'Activation failed. Please try again.') + '</span>';
+        msg.innerHTML = '<span style="color:var(--error)">' + escHtml(err.message || 'Activation failed. Please try again.') + '</span>';
       } finally {
         btn.disabled = false;
         btn.textContent = 'Activate';
@@ -441,7 +441,7 @@
           URL.revokeObjectURL(url);
           if (msg) msg.innerHTML = '<span style="color:var(--success)">Data exported. Check your downloads.</span>';
         } catch (err) {
-          if (msg) msg.innerHTML = '<span style="color:var(--error)">' + (err.message || 'Export failed') + '</span>';
+          if (msg) msg.innerHTML = '<span style="color:var(--error)">' + escHtml(err.message || 'Export failed') + '</span>';
         } finally {
           exportBtn.disabled = false;
           exportBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export My Data';
@@ -464,7 +464,7 @@
             window.location.href = '/lumora/';
           })
           .catch(function (err) {
-            if (msg) msg.innerHTML = '<span style="color:var(--error)">' + (err.message || 'Deletion failed') + '</span>';
+            if (msg) msg.innerHTML = '<span style="color:var(--error)">' + escHtml(err.message || 'Deletion failed') + '</span>';
             deleteBtn.disabled = false;
             deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Delete Account';
           });
@@ -498,7 +498,7 @@
           body: { currentPassword: currentPass, newPassword: newPass },
         });
 
-        msg.innerHTML = '<span style="color:var(--success)">' + (data.message || 'Password changed. Please login again.') + '</span>';
+        msg.innerHTML = '<span style="color:var(--success)">' + escHtml(data.message || 'Password changed. Please login again.') + '</span>';
         form.reset();
 
         setTimeout(function () {
@@ -506,7 +506,7 @@
           window.location.href = '/lumora/login.html';
         }, 2000);
       } catch (err) {
-        msg.innerHTML = '<span style="color:var(--error)">' + (err.message || 'Failed to change password.') + '</span>';
+        msg.innerHTML = '<span style="color:var(--error)">' + escHtml(err.message || 'Failed to change password.') + '</span>';
       }
     });
   }
@@ -620,7 +620,7 @@
     item.className = 'notification-item unread';
     item.innerHTML = [
       '<div>',
-      '  <div class="notification-item-title">' + (data.title || 'Notification') + '</div>',
+      '  <div class="notification-item-title">' + escHtml(data.title || 'Notification') + '</div>',
       '  <div class="notification-item-time">Just now</div>',
       '</div>',
     ].join('\n');

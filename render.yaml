@@ -25,6 +25,12 @@ services:
         value: noreply@lumora.dev
       - key: FRONTEND_URL
         value: https://hellenicdev.eu/lumora
+      - key: ALLOWED_ORIGINS
+        value: https://hellenicdev.eu
+      - key: KOFI_PAGE_URL
+        sync: false
+      - key: KOFI_WEBHOOK_TOKEN
+        sync: false
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET

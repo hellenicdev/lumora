@@ -64,7 +64,7 @@
         '<div class="report-breadcrumb">Shared Report</div>' +
         '<h1 class="report-title">' + escHtml(report.title || 'Untitled Report') + '</h1>' +
         '<div class="report-meta-bar">' +
-          '<span class="report-type-badge report-type-' + report.reportType + '">' + escHtml(report.reportType) + '</span>' +
+          '<span class="report-type-badge report-type-' + escHtml(report.reportType) + '">' + escHtml(report.reportType) + '</span>' +
           '<span>' + (d && d.language ? escHtml(d.language) : '') + '</span>' +
           '<span>' + formatDate(report.createdAt) + '</span>' +
           '<span>' + (report.views || 0) + ' views</span>' +
@@ -182,11 +182,11 @@
     if (d.securityConcerns && d.securityConcerns.length > 0) {
       h += '<div class="report-section"><div class="section-header-inline"><h2>Security Concerns</h2><span class="section-count badge badge-error">' + d.securityConcerns.length + '</span></div>';
       d.securityConcerns.forEach(function (s) {
-        h += '<div class="security-item severity-' + s.severity + '">' +
+        h += '<div class="security-item severity-' + escHtml(s.severity) + '">' +
           '<div class="security-item-head">' +
-            '<span class="sev-badge ' + s.severity + '">' + escHtml(s.severity) + '</span>' +
+            '<span class="sev-badge ' + escHtml(s.severity) + '">' + escHtml(s.severity) + '</span>' +
             '<strong>' + escHtml(s.type) + '</strong>' +
-            '<span class="conf-badge ' + (s.confidence || 'low') + '">' + escHtml(s.confidence || 'low') + '</span>' +
+            '<span class="conf-badge ' + escHtml(s.confidence || 'low') + '">' + escHtml(s.confidence || 'low') + '</span>' +
           '</div>' +
           '<div class="file-path">' + escHtml(s.file) + '</div>' +
           (s.explanation ? '<div class="security-explanation">' + escHtml(s.explanation) + '</div>' : '') +
@@ -204,7 +204,7 @@
     if (d.suggestedFirstIssues && d.suggestedFirstIssues.length > 0) {
       h += '<div class="report-section"><div class="section-header-inline"><h2>Suggested Improvements</h2></div>';
       d.suggestedFirstIssues.forEach(function (issue) {
-        h += '<div class="suggested-issue priority-' + issue.priority + '">' +
+        h += '<div class="suggested-issue priority-' + escHtml(issue.priority) + '">' +
           '<div class="issue-priority" style="color:' + (issue.priority === 'critical' ? 'var(--color-danger)' : '#e67e22') + '">' + escHtml(issue.priority) + ' priority</div>' +
           '<div class="issue-text">' + escHtml(issue.suggestion) + '</div>' +
         '</div>';
@@ -245,13 +245,13 @@
       h += '<div class="report-empty"><p style="color:var(--color-success)">No open security incidents.</p></div>';
     }
     incidents.forEach(function (s) {
-      h += '<div class="security-item severity-' + s.severity + '">' +
+      h += '<div class="security-item severity-' + escHtml(s.severity) + '">' +
         '<div class="security-item-head">' +
-          '<span class="sev-badge ' + s.severity + '">' + escHtml(s.severity) + '</span>' +
+          '<span class="sev-badge ' + escHtml(s.severity) + '">' + escHtml(s.severity) + '</span>' +
           '<strong>' + escHtml(s.type) + '</strong>' +
-          '<span class="conf-badge ' + (s.confidence || 'low') + '">' + escHtml(s.confidence || 'low') + '</span>' +
+          '<span class="conf-badge ' + escHtml(s.confidence || 'low') + '">' + escHtml(s.confidence || 'low') + '</span>' +
         '</div>' +
-        '<div class="file-path">' + escHtml(s.file) + (s.line ? ':' + s.line : '') + '</div>' +
+        '<div class="file-path">' + escHtml(s.file) + (s.line ? ':' + escHtml(s.line) : '') + '</div>' +
         (s.explanation ? '<div class="security-explanation">' + escHtml(s.explanation) + '</div>' : '') +
       '</div>';
     });
@@ -297,7 +297,7 @@
         h += '<div class="api-group"><div class="api-group-title">/' + escHtml(group) + ' <span class="section-count">' + eps.length + '</span></div><ul class="entry-points">';
         eps.slice(0, 8).forEach(function (ep) {
           var methodColors = { GET: 'var(--color-success)', POST: 'var(--accent-primary)', PUT: '#e67e22', PATCH: '#e67e22', DELETE: 'var(--color-danger)' };
-          h += '<li><span style="font-weight:600;color:' + (methodColors[ep.method] || 'var(--text-primary)') + ';margin-right:6px">' + ep.method + '</span>' + escHtml(ep.path) + (ep.description ? ' <span style="color:var(--text-muted);font-size:12px">— ' + escHtml(ep.description) + '</span>' : '') + '</li>';
+          h += '<li><span style="font-weight:600;color:' + (methodColors[ep.method] || 'var(--text-primary)') + ';margin-right:6px">' + escHtml(ep.method) + '</span>' + escHtml(ep.path) + (ep.description ? ' <span style="color:var(--text-muted);font-size:12px">— ' + escHtml(ep.description) + '</span>' : '') + '</li>';
         });
         if (eps.length > 8) h += '<li style="color:var(--text-muted);font-size:13px">...and ' + (eps.length - 8) + ' more</li>';
         h += '</ul></div>';
