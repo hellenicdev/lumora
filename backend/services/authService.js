@@ -123,6 +123,10 @@ export async function logoutEverywhere(userId) {
   );
 }
 
+function hashResetToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 export async function forgotPassword(email) {
   const user = await User.findOne({ email });
   if (!user) {
@@ -130,7 +134,7 @@ export async function forgotPassword(email) {
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex');
-  user.resetPasswordToken = resetToken;
+  user.resetPasswordToken = hashResetToken(resetToken);
   user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
   await user.save();
 
@@ -138,8 +142,12 @@ export async function forgotPassword(email) {
 }
 
 export async function resetPassword(token, newPassword) {
+  if (typeof token !== 'string' || !/^[a-fA-F0-9]{64}$/.test(token)) {
+    throw new Error('Invalid or expired reset token');
+  }
+
   const user = await User.findOne({
-    resetPasswordToken: token,
+    resetPasswordToken: hashResetToken(token),
     resetPasswordExpires: { $gt: new Date() },
   });
 

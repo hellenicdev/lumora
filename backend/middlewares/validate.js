@@ -13,13 +13,17 @@ export function validate(schema) {
         }
 
         if (!isMissing) {
+          if (rule.type === 'string' && typeof value !== 'string') {
+            errors.push(`${field} must be a string`);
+            break;
+          }
           if (rule.minLength && value.length < rule.minLength) {
             errors.push(`${field} must be at least ${rule.minLength} characters`);
           }
           if (rule.maxLength && value.length > rule.maxLength) {
             errors.push(`${field} must be at most ${rule.maxLength} characters`);
           }
-          if (rule.pattern && !rule.pattern.test(value)) {
+          if (rule.pattern && (typeof value !== 'string' || !rule.pattern.test(value))) {
             errors.push(rule.message || `${field} is invalid`);
           }
           if (rule.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {

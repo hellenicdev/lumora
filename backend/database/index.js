@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import config from '../config/index.js';
 import { logger } from '../utils/logger.js';
 
+mongoose.set('sanitizeFilter', true);
+
 export async function connectDatabase() {
   try {
     await mongoose.connect(config.mongodbUri);
