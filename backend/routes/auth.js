@@ -25,7 +25,7 @@ router.post('/logout', authController.logout);
 router.post('/logout-everywhere', authenticate, authController.logoutEverywhere);
 router.get('/verify-email/:token', authController.verifyEmail);
 router.post('/forgot-password', authLimiter, verifyTurnstile, validate({ email: [{ required: true, type: 'email' }] }), authController.forgotPassword);
-router.post('/reset-password', authLimiter, validate({ password: [{ required: true, minLength: 8 }] }), authController.resetPassword);
+router.post('/reset-password', authLimiter, validate({ token: [{ required: true, type: 'string', pattern: /^[a-fA-F0-9]{64}$/, message: 'Invalid reset token' }], password: [{ required: true, minLength: 8 }] }), authController.resetPassword);
 router.get('/me', authenticate, authController.getMe);
 router.patch('/profile', authenticate, authController.updateProfile);
 router.post('/change-password', authenticate, validate({ currentPassword: [{ required: true }], newPassword: [{ required: true, minLength: 8 }] }), authController.changePassword);
